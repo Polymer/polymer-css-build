@@ -1,0 +1,14 @@
+{
+  "extends": "eslint:recommended",
+  "ecmaVersion": 6,
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "rules": {
+    "no-console": "off"
+  },
+  "plugins": [
+    "html"
+  ]
+}
