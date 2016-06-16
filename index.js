@@ -297,7 +297,7 @@ function polymerCssBuild(paths, options) {
       const finalStyle = styles[styles.length - 1];
       dom5.setAttribute(finalStyle, 'scope', scopeMap.get(finalStyle));
       if (styles.length > 1) {
-        const consumed = styles.slice(-1);
+        const consumed = styles.slice(0, -1);
         const text = styles.map(s => dom5.getTextContent(s));
         consumed.forEach(c => dom5.remove(c));
         dom5.setTextContent(finalStyle, text.join(''));
