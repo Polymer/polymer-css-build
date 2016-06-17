@@ -1,47 +1,36 @@
 #!/usr/bin/env bash
 set -e
-cleanup() {
-  pushd lib/polymer >/dev/null
-  git reset --hard
-  popd >/dev/null
-}
 
 prep_shadow() {
-  pushd lib/polymer >/dev/null
-  ../../bin/polymer-css-build test/unit/styling-scoped-elements.html test/unit/styling-scoped.html
-  ../../bin/polymer-css-build test/unit/styling-cross-scope-unknown-host.html
-  ../../bin/polymer-css-build test/unit/styling-cross-scope-var.html
-  ../../bin/polymer-css-build test/unit/styling-cross-scope-apply.html
-  ../../bin/polymer-css-build test/unit/custom-style.html test/unit/custom-style-import.html test/unit/sub/style-import.html
-  ../../bin/polymer-css-build test/unit/custom-style-late.html test/unit/custom-style-late-import.html
-  popd >/dev/null
-}
+  rm -rf test/shadow
+  cp -r lib/polymer test/shadow
 
-test_shadow() {
-  cleanup
-  echo "= shadow build ="
-  prep_shadow
-  wct -l chrome -l firefox test/runner.html
+  bin/polymer-css-build test/shadow/test/unit/styling-scoped-elements.html test/shadow/test/unit/styling-scoped.html
+  bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-unknown-host.html
+  bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-var.html
+  bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-apply.html
+  bin/polymer-css-build test/shadow/test/unit/custom-style.html test/shadow/test/unit/custom-style-import.html test/shadow/test/unit/sub/style-import.html
+  bin/polymer-css-build test/shadow/test/unit/custom-style-late.html test/shadow/test/unit/custom-style-late-import.html
 }
 
 prep_shady() {
-  pushd lib/polymer >/dev/null
-  ../../bin/polymer-css-build --build-for-shady test/unit/styling-scoped-elements.html test/unit/styling-scoped.html
-  ../../bin/polymer-css-build --build-for-shady test/unit/styling-cross-scope-var.html
-  ../../bin/polymer-css-build --build-for-shady test/unit/styling-cross-scope-apply.html
-  ../../bin/polymer-css-build --build-for-shady test/unit/custom-style.html test/unit/custom-style-import.html test/unit/sub/style-import.html
-  ../../bin/polymer-css-build --build-for-shady test/unit/custom-style-late.html test/unit/custom-style-late-import.html
-  popd >/dev/null
+  rm -rf test/shady
+  cp -r lib/polymer test/shady
+
+  bin/polymer-css-build --build-for-shady test/shady/test/unit/styling-scoped-elements.html test/shady/test/unit/styling-scoped.html
+  bin/polymer-css-build --build-for-shady test/shady/test/unit/styling-cross-scope-var.html
+  bin/polymer-css-build --build-for-shady test/shady/test/unit/styling-cross-scope-apply.html
+  bin/polymer-css-build --build-for-shady test/shady/test/unit/custom-style.html test/shady/test/unit/custom-style-import.html test/shady/test/unit/sub/style-import.html
+  bin/polymer-css-build --build-for-shady test/shady/test/unit/custom-style-late.html test/shady/test/unit/custom-style-late-import.html
 }
 
-test_shady() {
-  cleanup
-  echo "= shady build ="
-  prep_shady
-  wct -l chrome -l firefox test/shady-runner.html
+test_all() {
+  ln -sf ../lib/webcomponentsjs test/webcomponentsjs
+  wct test/index.html
 }
 
 if [ "$0" == "${BASH_SOURCE}" ]; then
-  test_shadow
-  test_shady
+  prep_shadow
+  prep_shady
+  test_all
 fi

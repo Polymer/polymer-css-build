@@ -1,3 +1,6 @@
 node_modules
 lib/polymer
 lib/webcomponentsjs
+test/shadow
+test/shady
+test/webcomponentsjs
