@@ -25,7 +25,7 @@ prep_shady() {
 }
 
 test_all() {
-  ln -sf ../node_modules/webcomponentsjs test/webcomponentsjs
+  ln -sf ../node_modules/webcomponents.js test/webcomponentsjs
   wct test/index.html
 }
 
