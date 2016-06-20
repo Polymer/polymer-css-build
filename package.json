@@ -5,18 +5,19 @@
   "main": "index.js",
   "bin": "bin/polymer-css-build",
   "scripts": {
-    "test": "eslint **/*.js && npm run prepare && lib/test.sh",
-    "prepare": "cd lib; ./prepare.sh",
-    "generate": "npm run prepare; cd lib; ./generate.sh"
+    "test": "eslint **/*.js && lib/test.sh",
+    "generate": "cd lib; ./generate.sh"
   },
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
   "devDependencies": {
+    "@polymer/polymer": "Polymer/polymer#master",
     "crisper": "^2.0.1",
     "eslint": "^2.5.3",
     "eslint-plugin-html": "^1.4.0",
     "vulcanize": "^1.14.8",
-    "web-component-tester": "^4.2.2"
+    "web-component-tester": "^4.2.2",
+    "webcomponents.js": "^0.7.22"
   },
   "dependencies": {
     "command-line-args": "^2.1.6",

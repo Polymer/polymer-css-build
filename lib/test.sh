@@ -3,7 +3,7 @@ set -e
 
 prep_shadow() {
   rm -rf test/shadow
-  cp -r lib/polymer test/shadow
+  cp -r node_modules/@polymer/polymer test/shadow
 
   bin/polymer-css-build test/shadow/test/unit/styling-scoped-elements.html test/shadow/test/unit/styling-scoped.html
   bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-unknown-host.html
@@ -15,7 +15,7 @@ prep_shadow() {
 
 prep_shady() {
   rm -rf test/shady
-  cp -r lib/polymer test/shady
+  cp -r node_modules/@polymer/polymer test/shady
 
   bin/polymer-css-build --build-for-shady test/shady/test/unit/styling-scoped-elements.html test/shady/test/unit/styling-scoped.html
   bin/polymer-css-build --build-for-shady test/shady/test/unit/styling-cross-scope-var.html
@@ -25,7 +25,7 @@ prep_shady() {
 }
 
 test_all() {
-  ln -sf ../lib/webcomponentsjs test/webcomponentsjs
+  ln -sf ../node_modules/webcomponentsjs test/webcomponentsjs
   wct test/index.html
 }
 
