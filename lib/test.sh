@@ -25,7 +25,9 @@ prep_shady() {
 }
 
 test_all() {
-  ln -sf ../node_modules/webcomponents.js test/webcomponentsjs
+  if [ ! -d test/webcomponentsjs ]; then
+    ln -s ../node_modules/webcomponents.js test/webcomponentsjs
+  fi
   wct test/index.html
 }
 

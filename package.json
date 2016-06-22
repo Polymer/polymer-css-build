@@ -6,7 +6,8 @@
   "bin": "bin/polymer-css-build",
   "scripts": {
     "test": "eslint **/*.js && lib/test.sh",
-    "generate": "cd lib; ./generate.sh"
+    "generate": "cd lib; ./generate.sh",
+    "update-polymer": "npm update && npm run generate"
   },
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
@@ -20,8 +21,8 @@
     "webcomponents.js": "^0.7.22"
   },
   "dependencies": {
-    "command-line-args": "^2.1.6",
+    "command-line-args": "^2.0.2",
     "dom5": "^1.3.1",
-    "hydrolysis": "^1.23.3"
+    "hydrolysis": "^1.19.2"
   }
 }
