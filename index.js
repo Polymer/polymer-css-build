@@ -14,6 +14,17 @@ const dom5 = require('dom5');
 const Polymer = require('./lib/polymer-styling.js');
 
 const pathResolver = require('./lib/pathresolver');
+const initialValues = require('./lib/initial-values').initialValues;
+
+/*
+ * Apply Shim uses a dynamicly create DOM element
+ * to lookup initial property values at runtime.
+ *
+ * Override with a fixed table for building
+ */
+Polymer.ApplyShim._getInitialValueForProperty = (property) =>
+  initialValues[property] || '';
+
 
 const pred = dom5.predicates;
 
