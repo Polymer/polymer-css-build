@@ -7,7 +7,8 @@
     "polymer-css-build": "bin/polymer-css-build"
   },
   "scripts": {
-    "test": "eslint **/*.js && lib/test.sh",
+    "lint": "eslint **/*.js",
+    "test": "npm run lint && lib/test.sh",
     "generate": "cd lib; ./generate.sh",
     "update-polymer": "npm update && npm run generate"
   },
@@ -16,7 +17,7 @@
   "devDependencies": {
     "@polymer/polymer": "github:polymer/polymer#master",
     "crisper": "^2.0.1",
-    "eslint": "^2.5.3",
+    "eslint": "^3.2.2",
     "eslint-plugin-html": "^1.4.0",
     "vulcanize": "^1.14.8",
     "web-component-tester": "^4.2.2",
