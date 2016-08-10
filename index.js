@@ -231,10 +231,10 @@ function shadyShim(ast, style, elements) {
 
 function addClass(node, className) {
   const classList = getAttributeArray(node, 'class');
-  if (!classList.includes('style-scope')) {
+  if (classList.indexOf('style-scope') === -1) {
     classList.push('style-scope');
   }
-  if (!classList.includes(className)) {
+  if (classList.indexOf(className) === -1) {
     classList.push(className);
   }
   dom5.setAttribute(node, 'class', classList.join(' '));
