@@ -10,7 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 const polycss = require('../').polymerCssBuild;
 const cliArgs = require('command-line-args');
-const cli = cliArgs([
+const getCliUsage = require('command-line-usage');
+const options = [
   {
     name: 'file',
     type: String,
@@ -39,16 +40,23 @@ const cli = cliArgs([
     defaultValue: [],
     description: 'Output file names, must be in same order as input files. If not specified, files will be overwritten'
   }
-]);
+];
+
+const args = cliArgs(options);
 
 function printHelp() {
-  console.log(cli.getUsage({
-    header: 'Pre-apply Polymer CSS tasks',
-    title: 'polymer-css-build'
-  }));
+  console.log(getCliUsage([
+    {
+      header: 'Pre-apply Polymer CSS tasks',
+      content: 'polymer-css-build'
+    },
+    {
+      header: 'Options',
+      optionList: options
+    }
+  ]));
 }
 
-const args = cli.parse();
 if (args.help) {
   printHelp();
   process.exit(0);
