@@ -28,7 +28,7 @@ test_all() {
   if [ ! -d test/webcomponentsjs ]; then
     ln -s ../node_modules/webcomponents.js test/webcomponentsjs
   fi
-  wct test/index.html
+  node_modules/.bin/wct test/index.html
 }
 
 if [ "$0" == "${BASH_SOURCE}" ]; then

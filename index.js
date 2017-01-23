@@ -348,6 +348,13 @@ function polymerCssBuild(paths, options) {
       }
       text = Polymer.CssParse.stringify(ast, true);
       dom5.setTextContent(s, text);
+      if (!nativeShadow && options['reorder-styles']) {
+        const module = ancestorWalk(s, dom5.predicates.hasTagName('dom-module'));
+        if (module) {
+          const parent = module.parentNode;
+          dom5.insertBefore(parent, module, s);
+        }
+      }
     });
   }).then(() => {
     return paths.map(p => {

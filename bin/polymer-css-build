@@ -33,6 +33,11 @@ const options = [
     description: 'Perform Shady DOM shimming. This will make the build no longer compatible with Shadow DOM'
   },
   {
+    name: 'reorder-styles',
+    type: Boolean,
+    description: 'Reorder styles out of dom-modules. Requires --build-for-shady'
+  },
+  {
     name: 'output',
     alias: 'o',
     type: String,
