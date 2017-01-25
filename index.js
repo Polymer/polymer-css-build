@@ -131,13 +131,7 @@ function getAndFixDomModuleStyles(module) {
 // TODO: consider upstreaming to dom5
 function getAttributeArray(node, attribute) {
   const attr = dom5.getAttribute(node, attribute);
-  let array;
-  if (!attr) {
-    array = [];
-  } else {
-    array = attr.split(' ');
-  }
-  return array;
+  return attr ? attr.split(' ') : [];
 }
 
 function inlineStyleIncludes(style) {
@@ -324,6 +318,13 @@ function polymerCssBuild(paths, options) {
     // add in custom styles
     return styles.concat(customStyles);
   }).then(styles => {
+    let singleStyle;
+    if (!nativeShadow && options['reorder-styles']) {
+      const ownerDoc = ancestorWalk(styles[0], (n) => !n.parentNode);
+      const ownerHead = dom5.query(ownerDoc, dom5.predicates.hasTagName('head'));
+      singleStyle = dom5.constructors.element('style');
+      dom5.append(ownerHead, singleStyle);
+    }
     // populate mixin map
     styles.forEach(s => {
       const text = dom5.getTextContent(s);
@@ -349,10 +350,10 @@ function polymerCssBuild(paths, options) {
       text = Polymer.CssParse.stringify(ast, true);
       dom5.setTextContent(s, text);
       if (!nativeShadow && options['reorder-styles']) {
-        const module = ancestorWalk(s, dom5.predicates.hasTagName('dom-module'));
-        if (module) {
-          const parent = module.parentNode;
-          dom5.insertBefore(parent, module, s);
+        const moduleNode = ancestorWalk(s, dom5.predicates.hasTagName('dom-module'));
+        if (moduleNode) {
+          dom5.remove(s);
+          dom5.setTextContent(singleStyle, dom5.getTextContent(singleStyle) + text);
         }
       }
     });
