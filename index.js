@@ -350,11 +350,8 @@ function polymerCssBuild(paths, options) {
       text = Polymer.CssParse.stringify(ast, true);
       dom5.setTextContent(s, text);
       if (!nativeShadow && options['reorder-styles']) {
-        const moduleNode = ancestorWalk(s, dom5.predicates.hasTagName('dom-module'));
-        if (moduleNode) {
-          dom5.remove(s);
-          dom5.setTextContent(singleStyle, dom5.getTextContent(singleStyle) + text);
-        }
+        dom5.remove(s);
+        dom5.setTextContent(singleStyle, dom5.getTextContent(singleStyle) + text);
       }
     });
   }).then(() => {
