@@ -303,7 +303,9 @@ function polymerCssBuild(paths, options) {
         return;
       }
       // do style includes
-      styles.forEach(s => inlineStyleIncludes(s));
+      if (!options['no-inline-includes']) {
+        styles.forEach(s => inlineStyleIncludes(s));
+      }
       // reduce styles to one
       const finalStyle = styles[styles.length - 1];
       dom5.setAttribute(finalStyle, 'scope', scopeMap.get(finalStyle));
