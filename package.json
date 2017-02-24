@@ -1,6 +1,6 @@
 {
   "name": "polymer-css-build",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Build tool for Polymer css",
   "main": "index.js",
   "bin": {
