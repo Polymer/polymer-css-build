@@ -324,7 +324,7 @@ function polymerCssBuild(paths, options) {
     // inline custom styles with includes
     customStyles.forEach(s => inlineStyleIncludes(s));
     // add in custom styles
-    return styles.concat(customStyles);
+    return customStyles.concat(styles);
   }).then(styles => {
     // populate mixin map
     styles.forEach(s => {
