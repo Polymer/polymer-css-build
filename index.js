@@ -32,7 +32,11 @@ const domModuleCache = Object.create(null);
 
 const domModuleMatch = pred.AND(
   pred.hasTagName('dom-module'),
-  pred.hasAttr('id')
+  pred.OR(
+    pred.hasAttr('id'),
+    pred.hasAttr('name'),
+    pred.hasAttr('is')
+  )
 );
 
 // TODO: upstream to dom5
@@ -282,7 +286,8 @@ function polymerCssBuild(paths, options) {
   }).then(() => {
     // map dom modules to styles
     return analyzer.nodeWalkAllDocuments(domModuleMatch).map(el => {
-      const id = dom5.getAttribute(el, 'id');
+      const id = dom5.getAttribute(el, 'id') || dom5.getAttribute(el, 'name') ||
+          dom5.getAttribute(el, 'is');
       if (!id) {
         return [];
       }

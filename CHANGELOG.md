@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Also support `name="..."` and `is="..."` when identifying `<dom-module>`s
 
 ## [0.0.7] - 2016-11-01
 
