@@ -15,7 +15,7 @@
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "@polymer/polymer": "github:polymer/polymer#master",
+    "@polymer/polymer": "github:polymer/polymer#1.x",
     "crisper": "^2.0.1",
     "eslint": "^3.2.2",
     "eslint-plugin-html": "^2.0.1",

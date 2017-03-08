@@ -6,7 +6,7 @@ prep_shadow() {
   cp -r node_modules/@polymer/polymer test/shadow
 
   bin/polymer-css-build test/shadow/test/unit/styling-scoped-elements.html test/shadow/test/unit/styling-scoped.html
-  bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-unknown-host.html
+  bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-unknown-host-shadow.html
   bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-var.html
   bin/polymer-css-build test/shadow/test/unit/styling-cross-scope-apply.html
   bin/polymer-css-build test/shadow/test/unit/custom-style.html test/shadow/test/unit/custom-style-import.html test/shadow/test/unit/sub/style-import.html
