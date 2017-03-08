@@ -258,6 +258,12 @@ function markElement(domModule, scope) {
   }
 }
 
+function slotToContent(ast) {
+  Polymer.StyleUtil.forEachRule(ast, (rule) => {
+    rule.selector = Polymer.StyleTransformer._slottedToContent(rule.selector);
+  });
+}
+
 function polymerCssBuild(paths, options) {
   if (options && options['build-for-shady']) {
     Polymer.Settings.useNativeShadow = false;
@@ -350,7 +356,9 @@ function polymerCssBuild(paths, options) {
         markElement(s);
       }
       applyShim(ast);
-      if (!nativeShadow) {
+      if (nativeShadow) {
+        slotToContent(ast);
+      } else {
         shadyShim(ast, s, analyzer.elements);
       }
       text = Polymer.CssParse.stringify(ast, true);
