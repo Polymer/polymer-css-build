@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.1] - 2017-05-23
+### Fixed
+* Fix `--no-inline-includes` to collect includes when collating styles
+
 ## [0.1.0] - 2017-03-07
 ### Fixed
 * Also support `name="..."` and `is="..."` when identifying `<dom-module>`s
