@@ -323,12 +323,11 @@ function polymerCssBuild(paths, options) {
       if (styles.length > 1) {
         const consumed = styles.slice(0, -1);
         const text = styles.map(s => dom5.getTextContent(s));
-        const includes = styles.map(s => dom5.getAttribute(s, 'include') || '');
-        const trimmedIncludes = includes.map(i => i.trim()).filter(i => !!i);
+        const includes = styles.map(s => getAttributeArray(s, 'include')).reduce((acc, inc) => acc.concat(inc));
         consumed.forEach(c => dom5.remove(c));
         dom5.setTextContent(finalStyle, text.join(''));
-        const oldInclude = dom5.getAttribute(finalStyle, 'include');
-        const newInclude = (oldInclude || []).concat(trimmedIncludes).join(' ');
+        const oldInclude = getAttributeArray(finalStyle, 'include');
+        const newInclude = oldInclude.concat(includes).join(' ');
         if (newInclude) {
           dom5.setAttribute(finalStyle, 'include', newInclude);
         }
