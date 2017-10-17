@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.1] - 2017-10-17
+### Fixed
+* Removed broken package-lock.json that was breaking tests
+
 ## [0.2.0] - 2017-10-17
 ### Fixed
 * Fix selectors of the form `html:not([foo]) *`
