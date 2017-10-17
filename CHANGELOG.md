@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.2] - 2017-10-17
+### Fixed
+* Don't distribute development git submodule
+
 ## [0.2.1] - 2017-10-17
 ### Fixed
 * Removed broken package-lock.json that was breaking tests

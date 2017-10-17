@@ -1,0 +1,8 @@
+bower_components
+node_modules
+test/shadow
+test/shady
+test/webcomponentsjs
+.vscode
+example
+polymer
