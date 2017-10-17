@@ -1,0 +1,4 @@
+[submodule "polymer"]
+	path = polymer
+	url = git://github.com/Polymer/polymer.git
+	branch = 1.x

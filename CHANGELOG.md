@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.2.0] - 2017-10-17
+### Fixed
+* Fix selectors of the form `html:not([foo]) *`
+* Support the `:dir()` selector
+
 ## [0.1.1] - 2017-05-23
 ### Fixed
 * Fix `--no-inline-includes` to collect includes when collating styles

@@ -15,12 +15,12 @@
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "@polymer/polymer": "github:polymer/polymer#1.x",
+    "bower": "^1.8.2",
     "crisper": "^2.0.1",
     "eslint": "^3.2.2",
     "eslint-plugin-html": "^2.0.1",
     "vulcanize": "^1.14.8",
-    "web-component-tester": "^5.0.1",
+    "web-component-tester": "^5",
     "webcomponents.js": "^0.7.22"
   },
   "dependencies": {

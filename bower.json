@@ -1,0 +1,25 @@
+{
+  "name": "polymer-css-build",
+  "description": "Build tool for Polymer css",
+  "main": "index.js",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "polymer",
+    "css"
+  ],
+  "homepage": "https://github.com/Polymer/polymer-css-build",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "web-component-tester": "^6.3.0"
+  }
+}
