@@ -320,7 +320,7 @@ function polymerCssBuild(paths, options) {
         return;
       }
       // do style includes
-      if (!options['no-inline-includes']) {
+      if (options && !options['no-inline-includes']) {
         styles.forEach(s => inlineStyleIncludes(s));
       }
       // reduce styles to one
