@@ -21,7 +21,7 @@ const {Analyzer, InMemoryOverlayUrlLoader} = require('polymer-analyzer');
 // Use `Analysis` from polymer-analyzer for typing
 /* eslint-disable no-unused-vars */
 const {Analysis} = require('polymer-analyzer/lib/model/model.js');
-/* eslint-enable no-unused-vars */
+/* eslint-enable */
 
 const {dirShadowTransform, slottedToContent} = require('./lib/polymer-1-transforms.js');
 
@@ -70,25 +70,25 @@ function prepend(parent, node) {
  * Collect styles from dom-module
  * In addition, make sure those styles are inside a template
  */
-function getAndFixDomModuleStyles(module) {
+function getAndFixDomModuleStyles(domModule) {
   // TODO: support `.styleModules = ['module-id', ...]` ?
-  const styles = dom5.queryAll(module, styleMatch, undefined, dom5.childNodesIncludeTemplate);
+  const styles = dom5.queryAll(domModule, styleMatch, undefined, dom5.childNodesIncludeTemplate);
   if (!styles.length) {
     return [];
   }
-  let template = dom5.query(module, pred.hasTagName('template'));
+  let template = dom5.query(domModule, pred.hasTagName('template'));
   if (!template) {
     template = dom5.constructors.element('template');
     const content = dom5.constructors.fragment();
     styles.forEach(s => dom5.append(content, s));
     dom5.append(template, content);
-    dom5.append(module, template);
+    dom5.append(domModule, template);
   } else {
     styles.forEach((s) => {
       let templateContent = template.content;
       // ensure element styles are inside the template element
-      const parent = dom5.nodeWalkAncestors(s, n =>
-        n === templateContent || n === module
+      const parent = dom5.nodeWalkAncestors(s, (n) =>
+        n === templateContent || n === domModule
       );
       if (parent !== templateContent) {
         prepend(templateContent, s);
@@ -118,19 +118,19 @@ function inlineStyleIncludes(style) {
   const includes = getAttributeArray(style, 'include');
   const leftover = [];
   const baseDocument = style.__ownerDocument;
-  includes.forEach(id => {
-    const module = domModuleCache[id];
-    if (!module) {
+  includes.forEach((id) => {
+    const domModule = domModuleCache[id];
+    if (!domModule) {
       // we missed this one, put it back on later
       leftover.push(id);
       return;
     }
-    const includedStyles = getAndFixDomModuleStyles(module);
+    const includedStyles = getAndFixDomModuleStyles(domModule);
     // gather included styles
     includedStyles.forEach(ism => {
       // this style may also have includes
       inlineStyleIncludes(ism);
-      const inlineDocument = module.__ownerDocument;
+      const inlineDocument = domModule.__ownerDocument;
       let includeText = dom5.getTextContent(ism);
       // adjust paths
       includeText = pathResolver.rewriteURL(inlineDocument, baseDocument, includeText);
@@ -269,7 +269,6 @@ async function polymerCssBuild(paths, options = {}) {
     const styles = getAndFixDomModuleStyles(el);
     styles.forEach((s) => scopeMap.set(s, scope));
     moduleStyles.push(styles);
-
   }
   // inline and flatten styles into a single list
   const flatStyles = [];
@@ -286,9 +285,9 @@ async function polymerCssBuild(paths, options = {}) {
     dom5.setAttribute(finalStyle, 'scope', scopeMap.get(finalStyle));
     if (styles.length > 1) {
       const consumed = styles.slice(0, -1);
-      const text = styles.map(s => dom5.getTextContent(s));
-      const includes = styles.map(s => getAttributeArray(s, 'include')).reduce((acc, inc) => acc.concat(inc));
-      consumed.forEach(c => dom5.remove(c));
+      const text = styles.map((s) => dom5.getTextContent(s));
+      const includes = styles.map((s) => getAttributeArray(s, 'include')).reduce((acc, inc) => acc.concat(inc));
+      consumed.forEach((c) => dom5.remove(c));
       dom5.setTextContent(finalStyle, text.join(''));
       const oldInclude = getAttributeArray(finalStyle, 'include');
       const newInclude = oldInclude.concat(includes).join(' ');
