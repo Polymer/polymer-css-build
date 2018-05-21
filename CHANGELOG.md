@@ -1,5 +1,10 @@
 # Change Log
 
+## [Unreleased]
+* Upgrade to using @webcomponents/shadydom for Polymer v2 support
+* Use polymer-analyzer instead of hydrolysis
+* Remove vulcanize step of Polymer v1
+
 ## [0.2.2] - 2017-10-17
 ### Fixed
 * Don't distribute development git submodule

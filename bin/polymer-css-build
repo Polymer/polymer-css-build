@@ -44,6 +44,19 @@ const options = [
     name: 'no-inline-includes',
     type: Boolean,
     description: 'Disable inlining <style include> elements'
+  },
+  {
+    name: 'polymer-version',
+    type: (numArg) => {
+      const num = parseInt(numArg, 10);
+      if (Number.isInteger(num) && num >= 1 && num <= 2) {
+        return num
+      } else {
+        throw new Error(`Supported versions are 1 and 2`);
+      }
+    },
+    defaultValue: 2,
+    description: 'Which version of Polymer to build for. Determines if URLs are transformed in templates, and whether to transform <slot> to <content>. Supported versions are `1` and `2`. Version 2 is default'
   }
 ];
 
@@ -52,8 +65,8 @@ const args = cliArgs(options);
 function printHelp() {
   console.log(getCliUsage([
     {
-      header: 'Pre-apply Polymer CSS tasks',
-      content: 'polymer-css-build'
+      content: 'Pre-apply Polymer CSS tasks',
+      header: 'polymer-css-build'
     },
     {
       header: 'Options',
@@ -85,11 +98,11 @@ const docs = args.file.map(f => ({
   content: fs.readFileSync(f, 'utf8')
 }));
 const outputFiles = args.output.length ? args.output : args.file;
-polycss(docs, args).then(docs => {
+polycss(docs, args).then((docs) => {
   docs.forEach((d, idx) => {
     fs.writeFileSync(outputFiles[idx], d.content, 'utf8');
   });
-}).catch(err => {
-  console.error(err.stack);
+}).catch((err) => {
+  console.error(err.message);
   process.exit(1);
 })
