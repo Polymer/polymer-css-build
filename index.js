@@ -127,7 +127,7 @@ function inlineStyleIncludes(style) {
     }
     const includedStyles = getAndFixDomModuleStyles(domModule);
     // gather included styles
-    includedStyles.forEach(ism => {
+    includedStyles.forEach((ism) => {
       // this style may also have includes
       inlineStyleIncludes(ism);
       const inlineDocument = domModule.__ownerDocument;
@@ -228,6 +228,10 @@ function setUpLibraries(useNativeShadow) {
   StyleUtil = libraries.StyleUtil;
 }
 
+function setNodeFileLocation(node, analysisKind) {
+  node.__ownerDocument = analysisKind.sourceRange.file;
+}
+
 /**
  *
  * @param {Analysis} analysis
@@ -238,7 +242,11 @@ function setUpLibraries(useNativeShadow) {
 function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
   const results = [];
   for (const document of analysis.getFeatures({kind: 'document'})) {
-    dom5.nodeWalkAll(document.parsedDocument.ast, query, results, queryOptions);
+    const matches = dom5.nodeWalkAll(document.parsedDocument.ast, query, undefined, queryOptions);
+    matches.forEach((match) => {
+      setNodeFileLocation(match, document);
+    });
+    results.push([...matches]);
   }
   return results;
 }
@@ -265,9 +273,13 @@ async function polymerCssBuild(paths, options = {}) {
     const scope = id.toLowerCase();
     const el = domModule.astNode.node;
     domModuleCache[scope] = el;
+    setNodeFileLocation(el, domModule);
     markElement(el, scope, nativeShadow);
     const styles = getAndFixDomModuleStyles(el);
-    styles.forEach((s) => scopeMap.set(s, scope));
+    styles.forEach((s) => {
+      scopeMap.set(s, scope);
+      setNodeFileLocation(s, domModule);
+    });
     moduleStyles.push(styles);
   }
   // inline and flatten styles into a single list
@@ -278,7 +290,7 @@ async function polymerCssBuild(paths, options = {}) {
     }
     // do style includes
     if (options ? !options['no-inline-includes'] : true) {
-      styles.forEach(s => inlineStyleIncludes(s));
+      styles.forEach((s) => inlineStyleIncludes(s));
     }
     // reduce styles to one
     const finalStyle = styles[styles.length - 1];
