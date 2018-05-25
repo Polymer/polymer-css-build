@@ -9,6 +9,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<script src="bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="bower_components/polymer/polymer.html">
 
 <link rel="import" href="shared/shared-style.html">
@@ -24,3 +25,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <x-component>
 </x-component>
 
+<script>
+  suite('polymer-css-build' + window.location.search, function() {
+    const options = window.location.search.slice(1).split('&');
+    function assertComputed(node, expected, property = "border-top-width", pseudo) {
+      assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected);
+    }
+    test('top level div is the right color', function() {
+      assertComputed(Polymer.dom(document).querySelector('div#affected'), 'rgb(255, 0, 0)', 'color');
+    });
+  });
+</script>

@@ -246,7 +246,7 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
     matches.forEach((match) => {
       setNodeFileLocation(match, document);
     });
-    results.push([...matches]);
+    results.push(...matches);
   }
   return results;
 }
@@ -312,7 +312,9 @@ async function polymerCssBuild(paths, options = {}) {
   // find custom styles
   const customStyles = nodeWalkAllDocuments(analysis, customStyleMatch);
   // inline custom styles with includes
-  customStyles.forEach((s) => inlineStyleIncludes(s));
+  if (options ? !options['no-inline-includes'] : true) {
+    customStyles.forEach((s) => inlineStyleIncludes(s));
+  }
   // add in custom styles
   flatStyles.push(...customStyles);
   // populate mixin map
