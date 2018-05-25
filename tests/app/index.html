@@ -29,10 +29,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   suite('polymer-css-build' + window.location.search, function() {
     const options = window.location.search.slice(1).split('&');
     function assertComputed(node, expected, property = "border-top-width", pseudo) {
-      assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected);
+      assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected, `expected ${property} to have value ${expected}`);
     }
-    test('top level div is the right color', function() {
+    test('top level div', function() {
       assertComputed(Polymer.dom(document).querySelector('div#affected'), 'rgb(255, 0, 0)', 'color');
+    });
+
+    test('x-component', function() {
+      const el = Polymer.dom(document).querySelector('x-component');
+      assertComputed(el, '0px');
+      assertComputed(el, 'rgba(0, 0, 0, 0)', 'background-color');
+      const url = `${location.protocol}//${location.host}/shared/hands.png`;
+      assertComputed(el.$.icon, `url("${url}")`, 'background-image');
+    });
+
+    test('x-app', function() {
+      const el = Polymer.dom(document).querySelector('x-app');
+      const root = el.shadyRoot || el.shadowRoot;
+      const div = Polymer.dom(root).querySelector('div');
+      assertComputed(div, 'rgb(123, 123, 123)', 'color');
+      const component = Polymer.dom(root).querySelector('x-component');
+      assertComputed(component, '10px');
+      assertComputed(component, 'rgb(0, 0, 128)', 'background-color');
     });
   });
 </script>
