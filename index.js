@@ -251,6 +251,23 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
   return results;
 }
 
+/**
+ * Handle the difference between analyzer 2 and 3 Analyzer::getDocument
+ * @param {!Analysis} analysis
+ * @param {string} url
+ * @return {!Document}
+ */
+function getDocument(analysis, url) {
+  const res = analysis.getDocument(url);
+  if (res.error) {
+    throw res.error;
+  }
+  if (res.value) {
+    return res.value;
+  }
+  return res;
+}
+
 async function polymerCssBuild(paths, options = {}) {
   const nativeShadow = options ? !options['build-for-shady'] : true;
   const polymerVersion = options['polymer-version'] || 2;
@@ -348,10 +365,7 @@ async function polymerCssBuild(paths, options = {}) {
     dom5.setTextContent(s, text);
   });
   return paths.map((p) => {
-    const {error, value: doc} = analysis.getDocument(p.url);
-    if (error) {
-      throw error;
-    }
+    const doc = getDocument(analysis, p.url);
     return {
       url: p.url,
       content: doc.parsedDocument.stringify()
