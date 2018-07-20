@@ -16,6 +16,11 @@ const pathResolver = require('./lib/pathresolver.js');
 let ApplyShim, CssParse, StyleTransformer, StyleUtil;
 const loadShadyCSS = require('./lib/shadycss-entrypoint.js');
 
+const path = require('path');
+
+/** @type {number} */
+const AnalyzerVersion = require(path.resolve(require.resolve('polymer-analyzer'), '../../package.json')).version.match(/\d+/)[0];
+
 const {Analyzer, InMemoryOverlayUrlLoader} = require('polymer-analyzer');
 
 // Use `Analysis` from polymer-analyzer for typing
@@ -259,6 +264,9 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
  */
 function getDocument(analysis, url) {
   const res = analysis.getDocument(url);
+  if (typeof res === 'Warning') {
+    throw res;
+  }
   if (res.error) {
     throw res.error;
   }
@@ -266,6 +274,14 @@ function getDocument(analysis, url) {
     return res.value;
   }
   return res;
+}
+
+function getAstNode(domModule) {
+  if (AnalyzerVersion === '2') {
+    return domModule.astNode
+  } else {
+    return domModule.astNode.node;
+  }
 }
 
 async function polymerCssBuild(paths, options = {}) {
@@ -288,7 +304,7 @@ async function polymerCssBuild(paths, options = {}) {
   for (const domModule of analysis.getFeatures({kind: 'dom-module'})) {
     const id = domModule.id;
     const scope = id.toLowerCase();
-    const el = domModule.astNode.node;
+    const el = getAstNode(domModule);
     domModuleCache[scope] = el;
     setNodeFileLocation(el, domModule);
     markElement(el, scope, nativeShadow);
