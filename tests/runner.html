@@ -10,28 +10,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 <script>
-  const versions = [
-    'polymer1',
-    'polymer2'
-  ];
-  const v1Options = [
-    '',
-    'lazyRegister=true&useNativeCSSProperties=true',
-    'dom=shadow',
-    'dom=shadow&lazyRegister=true&useNativeCSSProperties=true'
-  ];
+  const options = {
+    polymer1: {
+      shadow: [
+        '',
+        'lazyRegister=true&useNativeCSSProperties=true',
+        'dom=shadow',
+        'dom=shadow&lazyRegister=true&useNativeCSSProperties=true'
+      ],
+      shady: [
+        '',
+        'lazyRegister=true&useNativeCSSProperties=true',
+      ]
+    },
+    polymer2: {
+      shadow: [
+        '',
+        'wc-shadydom=true',
+        'wc-shadydom=true&wc-shimcssproperties=true'
+      ],
+      shady: [
+        'wc-shadydom=true',
+        'wc-shadydom=true&wc-shimcssproperties=true'
+      ]
+    }
+  };
 
-  const v2Options = [
-    '',
-    'wc-shadydom=true',
-    'wc-shadydom=true&wc-shimcssproperties=true'
-  ];
-
-  function combinations(suites, flags) {
+  function combinations(suites, flags, combinator = '?') {
     return flags.map((f) => {
-      return f ? suites.map((s) => `${s}?${f}`) : suites;
+      return f ? suites.map((s) => `${s}${combinator}${f}`) : suites;
     }).reduce((arr, s) => arr.concat(s), []);
   }
 
-  WCT.loadSuites()
+  function buildSuites(version) {
+    return [
+      ...(combinations(['shadow/index.html', 'shadow-no-inline/index.html'], options[version].shadow)),
+      ...(combinations(['shady/index.html'], options[version].shady)),
+      ...(combinations(['baseline/index.html'], options[version].shadow.concat(options[version].shady)))
+    ].map((s) => `generated/${version}/${s}`);
+  }
+
+  WCT.loadSuites([
+    ...(buildSuites('polymer1')),
+    ...(buildSuites('polymer2'))
+  ]);
 </script>

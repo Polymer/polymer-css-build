@@ -27,9 +27,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script>
   suite('polymer-css-build' + window.location.search, function() {
-    const options = window.location.search.slice(1).split('&');
     function assertComputed(node, expected, property = "border-top-width", pseudo) {
-      assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected, `expected ${property} to have value ${expected}`);
+      assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected, `css property: ${property}`);
     }
     test('top level div', function() {
       assertComputed(Polymer.dom(document).querySelector('div#affected'), 'rgb(255, 0, 0)', 'color');
@@ -39,8 +38,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const el = Polymer.dom(document).querySelector('x-component');
       assertComputed(el, '0px');
       assertComputed(el, 'rgba(0, 0, 0, 0)', 'background-color');
-      const url = `${location.protocol}//${location.host}/shared/hands.png`;
+      const url = `${location.protocol}//${location.host}${location.pathname.replace('/index.html', '')}/shared/hands.png`;
       assertComputed(el.$.icon, `url("${url}")`, 'background-image');
+      const root = el.shadyRoot || el.shadowRoot;
+      const nested = Polymer.dom(root).querySelector('x-nested-apply');
+      assertComputed(nested, '20px');
+      assertComputed(nested, 'rgb(0, 0, 255)', 'border-color');
+      assertComputed(nested, 'rgba(0, 0, 0, 0)', 'background-color');
     });
 
     test('x-app', function() {
@@ -51,6 +55,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const component = Polymer.dom(root).querySelector('x-component');
       assertComputed(component, '10px');
       assertComputed(component, 'rgb(0, 0, 128)', 'background-color');
+      const componentRoot = component.shadyRoot || component.shadowRoot;
+      const nested = Polymer.dom(componentRoot).querySelector('x-nested-apply');
+      assertComputed(nested, '20px');
+      assertComputed(nested, 'rgb(0, 0, 255)', 'border-color');
+      assertComputed(nested, 'rgb(0, 0, 128)', 'background-color');
     });
   });
 </script>

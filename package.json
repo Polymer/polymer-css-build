@@ -8,9 +8,8 @@
   },
   "scripts": {
     "lint": "eslint **/*.js",
-    "test": "npm run lint && lib/test.sh",
-    "generate": "cd lib; ./generate.sh",
-    "update-polymer": "npm update && npm run generate"
+    "prepare-tests": "./tests/prepare-tests.sh",
+    "test": "npm run lint && npm run prepare-tests && wct"
   },
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
@@ -27,7 +26,7 @@
     "command-line-args": "^5.0.2",
     "command-line-usage": "^5.0.5",
     "dom5": "^3.0.1",
-    "esm": "^3.0.71",
+    "esm": "^3.0.72",
     "polymer-analyzer": "2.7 - 3"
   },
   "directories": {

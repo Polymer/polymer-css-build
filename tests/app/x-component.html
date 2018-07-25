@@ -9,6 +9,8 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="shared/shared-style.html">
+<link rel="import" href="x-nested-apply.html">
+
 <dom-module id="x-component">
   <template>
     <style include="icon">
@@ -23,11 +25,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         height: 500px;
         width: 500px;
       }
+      x-nested-apply {
+        --nested: {
+          @apply --style;
+          border: 20px dotted rgb(0, 0, 255);
+        }
+      }
     </style>
     <div id="container">
       <slot></slot>
     </div>
     <div id="icon"></div>
+    <x-nested-apply></x-nested-apply>
   </template>
   <script>
     Polymer({

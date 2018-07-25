@@ -7,15 +7,17 @@
 # Code distributed by Google as part of the polymer project is also
 # subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 set -e
-set -x
+# set -x
 rm -rf tests/generated
 mkdir -p tests/generated/polymer{1,2}/{shadow,shadow-no-inline,shady}
 cp -r tests/app/ tests/generated/polymer1/shadow
 cp -r tests/app/ tests/generated/polymer1/shadow-no-inline
 cp -r tests/app/ tests/generated/polymer1/shady
+cp -r tests/app/ tests/generated/polymer1/baseline
 cp -r tests/app/ tests/generated/polymer2/shadow
 cp -r tests/app/ tests/generated/polymer2/shadow-no-inline
 cp -r tests/app/ tests/generated/polymer2/shady
+cp -r tests/app/ tests/generated/polymer2/baseline
 
 build(){
   # require version number
@@ -27,7 +29,7 @@ build(){
   # use flag if parameter is defined
   local noInline=${4:+"--no-inline-includes"}
 
-  bin/polymer-css-build --polymer-version=${version} ${shady} ${noInline} --file tests/${outputDir}/index.html tests/${outputDir}/x-app.html tests/${outputDir}/x-component.html tests/${outputDir}/shared/shared-style.html
+  bin/polymer-css-build --polymer-version=${version} ${shady} ${noInline} --file tests/${outputDir}/index.html tests/${outputDir}/x-app.html tests/${outputDir}/x-component.html tests/${outputDir}/shared/shared-style.html tests/${outputDir}/x-nested-apply.html
 
   (cd tests/${outputDir}; npx bower install polymer#${version} web-component-tester)
 }
@@ -35,6 +37,9 @@ build(){
 build "1" "generated/polymer1/shadow"
 build "1" "generated/polymer1/shadow-no-inline" "" true
 build "1" "generated/polymer1/shady" true
+(cd tests/generated/polymer1/baseline; npx bower install polymer#1 web-component-tester)
+build "1" "generated/polymer1/baseline" "" "" true
 build "2" "generated/polymer2/shadow"
 build "2" "generated/polymer2/shadow-no-inline" "" true
 build "2" "generated/polymer2/shady" true
+(cd tests/generated/polymer2/baseline; npx bower install polymer#2 web-component-tester)
