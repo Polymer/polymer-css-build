@@ -1,10 +1,15 @@
 language: node_js
 node_js:
-  - "6"
   - "8"
 dist: trusty
 sudo: false
 addons:
   firefox: latest
   chrome: stable
-script: xvfb-run npm test
+script:
+- echo "polymer-analyzer 2.7"
+- npm install --no-save polymer-analyzer@2.7
+- xvfb-run npm test
+- echo "polymer-analyzer 3"
+- npm install --no-save polymer-analyzer@3
+- xvfb-run npm test

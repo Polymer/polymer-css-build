@@ -7,7 +7,7 @@
 # Code distributed by Google as part of the polymer project is also
 # subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 set -e
-# set -x
+set -x
 rm -rf tests/generated
 mkdir -p tests/generated/polymer{1,2}/{shadow,shadow-no-inline,shady}
 cp -r tests/app/ tests/generated/polymer1/shadow
