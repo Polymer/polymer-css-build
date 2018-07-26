@@ -38,7 +38,6 @@ build "1" "generated/polymer1/shadow"
 build "1" "generated/polymer1/shadow-no-inline" "" true
 build "1" "generated/polymer1/shady" true
 (cd tests/generated/polymer1/baseline; npx bower install polymer#1 web-component-tester)
-build "1" "generated/polymer1/baseline" "" "" true
 build "2" "generated/polymer2/shadow"
 build "2" "generated/polymer2/shadow-no-inline" "" true
 build "2" "generated/polymer2/shady" true

@@ -18,6 +18,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         'dom=shadow',
         'dom=shadow&lazyRegister=true&useNativeCSSProperties=true'
       ],
+      shadowNoInline: [
+        '',
+        'lazyRegister=true&useNativeCSSProperties=true',
+        'dom=shadow',
+        'dom=shadow&lazyRegister=true&useNativeCSSProperties=true&preserveStyleIncludes=true'
+      ],
       shady: [
         '',
         'lazyRegister=true&useNativeCSSProperties=true',
@@ -43,15 +49,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   function buildSuites(version) {
+    const opts = options[version];
     return [
-      ...(combinations(['shadow/index.html', 'shadow-no-inline/index.html'], options[version].shadow)),
-      ...(combinations(['shady/index.html'], options[version].shady)),
-      ...(combinations(['baseline/index.html'], options[version].shadow.concat(options[version].shady)))
+      ...(combinations(['shadow/index.html'], opts.shadow)),
+      ...(combinations(['shadow-no-inline/index.html'], opts.shadoNoInline || opts.shadow)),
+      ...(combinations(['shady/index.html'], opts.shady)),
+      ...(combinations(['baseline/index.html'], opts.shadow.concat(opts.shady)))
     ].map((s) => `generated/${version}/${s}`);
   }
 
   WCT.loadSuites([
-    ...(buildSuites('polymer1')),
-    ...(buildSuites('polymer2'))
+    // work around polymer1 shadow-no-inline not supporting urls
+    ...(buildSuites('polymer1').filter((s => s.indexOf('shadow-no-inline') === -1))),
+    // work around polymer 2 shady build not working yet
+    ...(buildSuites('polymer2').filter((s => s.indexOf('shady') === -1)))
   ]);
 </script>

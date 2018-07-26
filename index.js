@@ -226,15 +226,18 @@ function dirTransform(ast) {
 }
 
 function setUpLibraries(useNativeShadow) {
-  const libraries = loadShadyCSS(useNativeShadow);
-  ApplyShim = libraries.ApplyShim;
-  CssParse = libraries.CssParse;
-  StyleTransformer = libraries.StyleTransformer;
-  StyleUtil = libraries.StyleUtil;
+  ({
+    ApplyShim,
+    CssParse,
+    StyleTransformer,
+    StyleUtil
+  } = loadShadyCSS(useNativeShadow));
 }
 
 function setNodeFileLocation(node, analysisKind) {
-  node.__ownerDocument = analysisKind.sourceRange.file;
+  if (!node.__ownerDocument) {
+    node.__ownerDocument = analysisKind.sourceRange.file;
+  }
 }
 
 /**
@@ -246,7 +249,7 @@ function setNodeFileLocation(node, analysisKind) {
  */
 function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
   const results = [];
-  for (const document of analysis.getFeatures({kind: 'document'})) {
+  for (const document of analysis.getFeatures({kind: 'html-document'})) {
     const matches = dom5.nodeWalkAll(document.parsedDocument.ast, query, undefined, queryOptions);
     matches.forEach((match) => {
       setNodeFileLocation(match, document);
@@ -264,9 +267,6 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
  */
 function getDocument(analysis, url) {
   const res = analysis.getDocument(url);
-  if (typeof res === 'Warning') {
-    throw res;
-  }
   if (res.error) {
     throw res.error;
   }
@@ -282,6 +282,16 @@ function getAstNode(domModule) {
   } else {
     return domModule.astNode.node;
   }
+}
+
+function getOrderedDomModules(analysis) {
+  const domModules = [];
+  for (const document of analysis.getFeatures({kind: 'html-document'})) {
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      domModules.push(domModule)
+    }
+  }
+  return domModules;
 }
 
 async function polymerCssBuild(paths, options = {}) {
@@ -301,7 +311,7 @@ async function polymerCssBuild(paths, options = {}) {
   const analysis = await analyzer.analyze(paths.map((p) => p.url));
   // map dom modules to styles
   const moduleStyles = [];
-  for (const domModule of analysis.getFeatures({kind: 'dom-module'})) {
+  for (const domModule of getOrderedDomModules(analysis)) {
     const id = domModule.id;
     const scope = id.toLowerCase();
     const el = getAstNode(domModule);
