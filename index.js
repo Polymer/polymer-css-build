@@ -358,8 +358,9 @@ async function polymerCssBuild(paths, options = {}) {
   if (options ? !options['no-inline-includes'] : true) {
     customStyles.forEach((s) => inlineStyleIncludes(s));
   }
-  // add in custom styles
-  flatStyles.push(...customStyles);
+  // add custom styles to the front
+  // custom styles may define mixins for the whole tree
+  flatStyles.unshift(...customStyles);
   // populate mixin map
   flatStyles.forEach((s) => {
     const text = dom5.getTextContent(s);

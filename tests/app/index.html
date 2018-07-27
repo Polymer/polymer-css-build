@@ -8,12 +8,17 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
+<script>
+  window.hasNativeShadow = Boolean(document.head.attachShadow || document.head.createShadowRoot);
+</script>
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <script src="bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="bower_components/polymer/polymer.html">
 
 <link rel="import" href="shared/shared-style.html">
+<link rel="import" href="x-component.html">
 <link rel="import" href="x-app.html">
+<link rel="import" href="cr-bug.html">
 
 <custom-style>
   <style is="custom-style" include="shared-style">
@@ -22,8 +27,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <div id="affected">Hello World!</div>
 <x-app></x-app>
-<x-component>
-</x-component>
+<x-component></x-component>
+<cr-bug-owner></cr-bug-owner>
 
 <script>
   suite('polymer-css-build' + window.location.search, function() {
@@ -43,7 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const root = el.shadyRoot || el.shadowRoot;
       const nested = Polymer.dom(root).querySelector('x-nested-apply');
       assertComputed(nested, '20px');
-      assertComputed(nested, 'rgb(0, 0, 255)', 'border-color');
+      assertComputed(nested, 'rgb(0, 0, 255)', 'border-top-color');
       assertComputed(nested, 'rgba(0, 0, 0, 0)', 'background-color');
     });
 
@@ -58,8 +63,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const componentRoot = component.shadyRoot || component.shadowRoot;
       const nested = Polymer.dom(componentRoot).querySelector('x-nested-apply');
       assertComputed(nested, '20px');
-      assertComputed(nested, 'rgb(0, 0, 255)', 'border-color');
+      assertComputed(nested, 'rgb(0, 0, 255)', 'border-top-color');
       assertComputed(nested, 'rgb(0, 0, 128)', 'background-color');
+    });
+
+    test('cr-bug', function() {
+      const el = Polymer.dom(document).querySelector('cr-bug-owner');
+      const root = el.shadyRoot || el.shadowRoot;
+      const bug = Polymer.dom(root).querySelector('cr-bug');
+      const bugRoot = bug.shadyRoot || bug.shadowRoot;
+      const target = Polymer.dom(bugRoot).querySelector('#foo');
+      assertComputed(target, '500', 'font-weight');
+      assertComputed(target, '330px', 'max-width');
+      assertComputed(target, '0px', 'min-width');
+      assertComputed(target, '10px', 'padding-top');
+      assertComputed(target, '8px', 'padding-left');
     });
   });
 </script>
