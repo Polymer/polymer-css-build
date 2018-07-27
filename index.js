@@ -374,7 +374,11 @@ async function polymerCssBuild(paths, options = {}) {
     if (customStyleMatch(s)) {
       // custom-style `:root` selectors need to be processed to `html`
       StyleUtil.forEachRule(ast, (rule) => {
-        StyleTransformer.documentRule(rule);
+        if (options && options['build-for-shady']) {
+          StyleTransformer.documentRule(rule);
+        } else {
+          StyleTransformer.normalizeRootSelector(rule);
+        }
       });
       // mark the style as built
       markElement(s, null, nativeShadow);
