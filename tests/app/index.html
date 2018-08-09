@@ -30,6 +30,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <x-component></x-component>
 <cr-bug-owner></cr-bug-owner>
 
+<dom-module id="inline-element">
+  <template>
+    <style>
+      #inner {
+        color: var(--color);
+      }
+    </style>
+    <div id="inner">hi!</div>
+  </template>
+  <script>
+    window.HTMLImports.whenReady(() => {
+      Polymer({is: 'inline-element'});
+    });
+  </script>
+</dom-module>
+
+<inline-element></inline-element>
+
 <script>
   suite('polymer-css-build' + window.location.search, function() {
     function assertComputed(node, expected, property = "border-top-width", pseudo) {
@@ -78,6 +96,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       assertComputed(target, '0px', 'min-width');
       assertComputed(target, '10px', 'padding-top');
       assertComputed(target, '8px', 'padding-left');
+    });
+
+    test('inline element definition', function() {
+      const el = Polymer.dom(document).querySelector('inline-element');
+      const root = el.shadyRoot || el.shadowRoot;
+      const inner = Polymer.dom(root).querySelector('#inner');
+      assertComputed(inner, 'rgb(255, 0, 0)', 'color');
+    });
+
+    test('css-build attribute', function() {
+      if (window.location.pathname.indexOf('baseline') >= 0) {
+        // skip this test if we are testing the unbuilt case
+        this.skip();
+      }
+      const dm = Polymer.DomModule.import('x-app');
+      assert(dm.hasAttribute('css-build'), 'dom-module should have css-build attribute');
+      const template = dm.querySelector('template');
+      assert(template.hasAttribute('css-build'), 'dom-module template should have css-build attribute');
     });
   });
 </script>

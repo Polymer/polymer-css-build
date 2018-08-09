@@ -199,12 +199,14 @@ function addClass(node, className) {
 
 function markElement(domModule, scope, useNativeShadow) {
   const buildType = useNativeShadow ? 'shadow' : 'shady';
+  // apply scoping to dom-module
   dom5.setAttribute(domModule, 'css-build', buildType);
-  // mark elements' subtree under shady build
-  if (buildType === 'shady' && scope) {
-    const template = dom5.query(domModule, pred.hasTagName('template'));
-    // apply scoping to template
-    if (template) {
+  // apply scoping to template
+  const template = dom5.query(domModule, pred.hasTagName('template'));
+  if (template) {
+    dom5.setAttribute(template, 'css-build', buildType);
+    // mark elements' subtree under shady build
+    if (buildType === 'shady' && scope) {
       const elements = dom5.queryAll(template, notStyleMatch, undefined, dom5.childNodesIncludeTemplate);
       elements.forEach((el) => addClass(el, scope));
     }
