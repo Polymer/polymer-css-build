@@ -5,3 +5,4 @@ test/shady
 test/webcomponentsjs
 .vscode
 example
+tests/generated

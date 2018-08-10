@@ -1,0 +1,11 @@
+{
+  "env": {
+    "mocha": true,
+    "browser": true
+  },
+  "globals": {
+    "WCT": true,
+    "assert": true,
+    "Polymer": true
+  }
+}

@@ -1,0 +1,119 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<script>
+  window.hasNativeShadow = Boolean(document.head.attachShadow || document.head.createShadowRoot);
+</script>
+<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<script src="bower_components/web-component-tester/browser.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="shared/shared-style.html">
+<link rel="import" href="x-component.html">
+<link rel="import" href="x-app.html">
+<link rel="import" href="cr-bug.html">
+
+<custom-style>
+  <style is="custom-style" include="shared-style">
+  </style>
+</custom-style>
+
+<div id="affected">Hello World!</div>
+<x-app></x-app>
+<x-component></x-component>
+<cr-bug-owner></cr-bug-owner>
+
+<dom-module id="inline-element">
+  <template>
+    <style>
+      #inner {
+        color: var(--color);
+      }
+    </style>
+    <div id="inner">hi!</div>
+  </template>
+  <script>
+    window.HTMLImports.whenReady(() => {
+      Polymer({is: 'inline-element'});
+    });
+  </script>
+</dom-module>
+
+<inline-element></inline-element>
+
+<script>
+  suite('polymer-css-build' + window.location.search, function() {
+    function assertComputed(node, expected, property = "border-top-width", pseudo) {
+      assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected, `css property: ${property}`);
+    }
+    test('top level div', function() {
+      assertComputed(Polymer.dom(document).querySelector('div#affected'), 'rgb(255, 0, 0)', 'color');
+    });
+
+    test('x-component', function() {
+      const el = Polymer.dom(document).querySelector('x-component');
+      assertComputed(el, '0px');
+      assertComputed(el, 'rgba(0, 0, 0, 0)', 'background-color');
+      const url = `${location.protocol}//${location.host}${location.pathname.replace('/index.html', '')}/shared/hands.png`;
+      assertComputed(el.$.icon, `url("${url}")`, 'background-image');
+      const root = el.shadyRoot || el.shadowRoot;
+      const nested = Polymer.dom(root).querySelector('x-nested-apply');
+      assertComputed(nested, '20px');
+      assertComputed(nested, 'rgb(0, 0, 255)', 'border-top-color');
+      assertComputed(nested, 'rgba(0, 0, 0, 0)', 'background-color');
+    });
+
+    test('x-app', function() {
+      const el = Polymer.dom(document).querySelector('x-app');
+      const root = el.shadyRoot || el.shadowRoot;
+      const div = Polymer.dom(root).querySelector('div');
+      assertComputed(div, 'rgb(123, 123, 123)', 'color');
+      const component = Polymer.dom(root).querySelector('x-component');
+      assertComputed(component, '10px');
+      assertComputed(component, 'rgb(0, 0, 128)', 'background-color');
+      const componentRoot = component.shadyRoot || component.shadowRoot;
+      const nested = Polymer.dom(componentRoot).querySelector('x-nested-apply');
+      assertComputed(nested, '20px');
+      assertComputed(nested, 'rgb(0, 0, 255)', 'border-top-color');
+      assertComputed(nested, 'rgb(0, 0, 128)', 'background-color');
+    });
+
+    test('cr-bug', function() {
+      const el = Polymer.dom(document).querySelector('cr-bug-owner');
+      const root = el.shadyRoot || el.shadowRoot;
+      const bug = Polymer.dom(root).querySelector('cr-bug');
+      const bugRoot = bug.shadyRoot || bug.shadowRoot;
+      const target = Polymer.dom(bugRoot).querySelector('#foo');
+      assertComputed(target, '500', 'font-weight');
+      assertComputed(target, '330px', 'max-width');
+      assertComputed(target, '0px', 'min-width');
+      assertComputed(target, '10px', 'padding-top');
+      assertComputed(target, '8px', 'padding-left');
+    });
+
+    test('inline element definition', function() {
+      const el = Polymer.dom(document).querySelector('inline-element');
+      const root = el.shadyRoot || el.shadowRoot;
+      const inner = Polymer.dom(root).querySelector('#inner');
+      assertComputed(inner, 'rgb(255, 0, 0)', 'color');
+    });
+
+    test('css-build attribute', function() {
+      if (window.location.pathname.indexOf('baseline') >= 0) {
+        // skip this test if we are testing the unbuilt case
+        this.skip();
+      }
+      const dm = Polymer.DomModule.import('x-app');
+      assert(dm.hasAttribute('css-build'), 'dom-module should have css-build attribute');
+      const template = dm.querySelector('template');
+      assert(template.hasAttribute('css-build'), 'dom-module template should have css-build attribute');
+    });
+  });
+</script>

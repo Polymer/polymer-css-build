@@ -1,5 +1,15 @@
 # Change Log
 
+## [0.3.0] - 2018-08-10
+* Upgrade to using @webcomponents/shadydom for Polymer v2 support
+* Use polymer-analyzer instead of hydrolysis
+* Remove vulcanize step of Polymer v1
+* Add `--polymer-version` flag to specify v1 or v2
+  * `--polymer-version=2` is default
+* Also mark `<template>` in `<dom-module>` with `css-build` attribute
+* Rewrite tests to test Polymer v1 and Polymer v2
+* **NOTE**: Only `Polymer({})` elements are supported for now!
+
 ## [0.2.2] - 2017-10-17
 ### Fixed
 * Don't distribute development git submodule

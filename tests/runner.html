@@ -1,0 +1,67 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<script src="../node_modules/wct-browser-legacy/browser.js"></script>
+<script>
+  const options = {
+    polymer1: {
+      shadow: [
+        '',
+        'lazyRegister=true&useNativeCSSProperties=true',
+        'dom=shadow',
+        'dom=shadow&lazyRegister=true&useNativeCSSProperties=true'
+      ],
+      shadowNoInline: [
+        '',
+        'lazyRegister=true&useNativeCSSProperties=true',
+        'dom=shadow',
+        'dom=shadow&lazyRegister=true&useNativeCSSProperties=true&preserveStyleIncludes=true'
+      ],
+      shady: [
+        '',
+        'lazyRegister=true&useNativeCSSProperties=true',
+      ]
+    },
+    polymer2: {
+      shadow: [
+        '',
+        'wc-shadydom=true',
+        'wc-shadydom=true&wc-shimcssproperties=true'
+      ],
+      shady: [
+        'wc-shadydom=true',
+        'wc-shadydom=true&wc-shimcssproperties=true'
+      ]
+    }
+  };
+
+  function combinations(suites, flags, combinator = '?') {
+    return flags.map((f) => {
+      return f ? suites.map((s) => `${s}${combinator}${f}`) : suites;
+    }).reduce((arr, s) => arr.concat(s), []);
+  }
+
+  function buildSuites(version) {
+    const opts = options[version];
+    return [
+      ...(combinations(['shadow/index.html'], opts.shadow)),
+      ...(combinations(['shadow-no-inline/index.html'], opts.shadoNoInline || opts.shadow)),
+      ...(combinations(['shady/index.html'], opts.shady)),
+      ...(combinations(['baseline/index.html'], opts.shadow.concat(opts.shady)))
+    ].map((s) => `generated/${version}/${s}`);
+  }
+
+  WCT.loadSuites([
+    // work around polymer1 shadow-no-inline not supporting urls
+    ...(buildSuites('polymer1').filter((s => s.indexOf('shadow-no-inline') === -1))),
+    // work around polymer 2 shady build not working yet
+    ...(buildSuites('polymer2').filter((s => s.indexOf('shady') === -1)))
+  ]);
+</script>
