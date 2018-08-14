@@ -23,7 +23,7 @@ build(){
 
   cp -rv tests/app/* "tests/${outputDir}/"
 
-  bin/polymer-css-build --polymer-version=${version} ${shady} ${noInline} --file tests/${outputDir}/index.html tests/${outputDir}/x-app.html tests/${outputDir}/x-component.html tests/${outputDir}/shared/shared-style.html tests/${outputDir}/x-nested-apply.html tests/${outputDir}/cr-bug.html
+  bin/polymer-css-build --polymer-version=${version} ${shady} ${noInline} --file tests/${outputDir}/index.html tests/${outputDir}/x-app.html tests/${outputDir}/x-component.html tests/${outputDir}/shared/shared-style.html tests/${outputDir}/x-nested-apply.html tests/${outputDir}/cr-bug.html tests/${outputDir}/class-element.js
 
   (cd tests/${outputDir}; npx bower install polymer#${version} web-component-tester)
 }

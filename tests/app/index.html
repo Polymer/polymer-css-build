@@ -115,5 +115,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const template = dm.querySelector('template');
       assert(template.hasAttribute('css-build'), 'dom-module template should have css-build attribute');
     });
+
+    suite('class elements', function() {
+      if (!Polymer.Element) {
+        this.skip();
+      }
+    });
   });
 </script>

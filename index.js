@@ -32,7 +32,11 @@ const {dirShadowTransform, slottedToContent} = require('./lib/polymer-1-transfor
 
 const pred = dom5.predicates;
 
-const domModuleCache = Object.create(null);
+/**
+ * Map of dom-module id to <dom-module> element in the HTML AST
+ * @type {!Map<string, !Object>}
+ */
+const domModuleMap = Object.create(null);
 
 // TODO: upstream to dom5
 const styleMatch = pred.AND(
@@ -61,7 +65,17 @@ const customStyleMatchV2 = pred.AND(
 
 const styleIncludeMatch = pred.AND(styleMatch, pred.hasAttr('include'));
 
+/**
+ * Map of <style> ast node to element name that defines it
+ * @type {!WeakMap<!Object, string>}
+ */
 const scopeMap = new WeakMap();
+
+/**
+ * Map of <style> ast node to inline HTML documents from analyzer
+ * @type {!WeakMap<!Object, !Object>}
+ */
+const inlineHTMLDocumentMap = new WeakMap();
 
 function prepend(parent, node) {
   if (parent.childNodes.length > 0) {
@@ -77,7 +91,7 @@ function prepend(parent, node) {
  */
 function getAndFixDomModuleStyles(domModule) {
   // TODO: support `.styleModules = ['module-id', ...]` ?
-  const styles = dom5.queryAll(domModule, styleMatch, undefined, dom5.childNodesIncludeTemplate);
+  const styles = getStyles(domModule);
   if (!styles.length) {
     return [];
   }
@@ -103,6 +117,10 @@ function getAndFixDomModuleStyles(domModule) {
   return styles;
 }
 
+function getStyles(astNode) {
+  return dom5.queryAll(astNode, styleMatch, undefined, dom5.childNodesIncludeTemplate)
+}
+
 // TODO: consider upstreaming to dom5
 function getAttributeArray(node, attribute) {
   const attr = dom5.getAttribute(node, attribute);
@@ -124,7 +142,7 @@ function inlineStyleIncludes(style) {
   const leftover = [];
   const baseDocument = style.__ownerDocument;
   includes.forEach((id) => {
-    const domModule = domModuleCache[id];
+    const domModule = domModuleMap[id];
     if (!domModule) {
       // we missed this one, put it back on later
       leftover.push(id);
@@ -197,20 +215,27 @@ function addClass(node, className) {
   dom5.setAttribute(node, 'class', classList.join(' '));
 }
 
-function markElement(domModule, scope, useNativeShadow) {
-  const buildType = useNativeShadow ? 'shadow' : 'shady';
+function markElement(element, useNativeShadow) {
+  dom5.setAttribute(element, 'css-build', useNativeShadow ? 'shadow' : 'shady');
+}
+
+function markDomModule(domModule, scope, useNativeShadow) {
   // apply scoping to dom-module
-  dom5.setAttribute(domModule, 'css-build', buildType);
+  markElement(domModule, useNativeShadow);
   // apply scoping to template
   const template = dom5.query(domModule, pred.hasTagName('template'));
   if (template) {
-    dom5.setAttribute(template, 'css-build', buildType);
+    markElement(template, useNativeShadow);
     // mark elements' subtree under shady build
-    if (buildType === 'shady' && scope) {
-      const elements = dom5.queryAll(template, notStyleMatch, undefined, dom5.childNodesIncludeTemplate);
-      elements.forEach((el) => addClass(el, scope));
+    if (!useNativeShadow && scope) {
+      shadyScopeElementsInTemplate(template, scope);
     }
   }
+}
+
+function shadyScopeElementsInTemplate(template, scope) {
+  const elements = dom5.queryAll(template, notStyleMatch, undefined, dom5.childNodesIncludeTemplate);
+  elements.forEach((el) => addClass(el, scope));
 }
 
 // For forward compatibility with ShadowDOM v1 and Polymer 2.x,
@@ -255,6 +280,9 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
     const matches = dom5.nodeWalkAll(document.parsedDocument.ast, query, undefined, queryOptions);
     matches.forEach((match) => {
       setNodeFileLocation(match, document);
+      if (document.isInline) {
+        inlineHTMLDocumentMap.set(match, document);
+      }
     });
     results.push(...matches);
   }
@@ -278,22 +306,107 @@ function getDocument(analysis, url) {
   return res;
 }
 
-function getAstNode(domModule) {
+function getAstNode(feature) {
   if (AnalyzerVersion === '2') {
-    return domModule.astNode
+    return feature.astNode
   } else {
-    return domModule.astNode.node;
+    return feature.astNode.node;
   }
 }
 
-function getOrderedDomModules(analysis) {
-  const domModules = [];
-  for (const document of analysis.getFeatures({kind: 'html-document'})) {
-    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
-      domModules.push(domModule)
+function getOrderedPolymerElements(analysis) {
+  const polymerElements = new Set();
+  for (const document of analysis.getFeatures({kind: 'document'})) {
+    for (const element of document.getFeatures({kind: 'polymer-element'})) {
+      polymerElements.add(element);
     }
   }
-  return domModules;
+  return Array.from(polymerElements);
+}
+
+function updateInlineDocument(inlineDocument) {
+  if (!inlineDocument || !inlineDocument.isInline) {
+    return;
+  }
+  // this is a hack and bad
+  // get the containing JavascriptDocument for the inline document
+  const jsNode = getAstNode(inlineDocument);
+  // Get the to the node representing the inside of the TaggedTemplateLiteral
+  // NOTE: this assumes there's only one, and will need more complicated logic
+  // for handling interpolations.
+  const templateLiteral = jsNode.quasi.quasis[0];
+  // set the value of the TaggedTemplateLiteral interior to the stringified document
+  // the AST has both "cooked" and "raw" versions of the string, but they should be the same in practice
+  templateLiteral.value = {
+    cooked: inlineDocument.stringify(),
+    raw: inlineDocument.stringify()
+  };
+}
+
+function sourceRangeIsInside(haystack, needle) {
+  const {start: hStart, end: hEnd} = haystack;
+  const {line: hStartLine} = hStart;
+  const {line: hEndLine} = hEnd;
+  const {start: nStart, end: nEnd} = needle;
+  const {line: nStartLine} = nStart;
+  const {line: nEndLine} = nEnd;
+  return nStartLine >= hStartLine && nEndLine <= hEndLine;
+}
+
+function getInlinedTemplateDocument(polymerElement, analysis) {
+  // lookup from cache
+  if (inlineHTMLDocumentMap.has(polymerElement)) {
+    return inlineHTMLDocumentMap.get(polymerElement);
+  }
+  const jsDocument = polymerElement.astNode.containingDocument;
+  const url = jsDocument.url;
+  const document = getDocument(analysis, url);
+  const inlineHTMLDocumentSet = document.getFeatures({kind: 'html-document'});
+  let inlinedDocument = null;
+  // search all inlined html-documents in this js document for the one that is
+  // inside the class definition for this polymer element by source lines
+  const haystack = jsDocument.sourceRangeForNode(getAstNode(polymerElement));
+  for (const document of inlineHTMLDocumentSet) {
+    const needle = jsDocument.sourceRangeForNode(getAstNode(document));
+    if (sourceRangeIsInside(haystack, needle)) {
+      inlinedDocument = document;
+      break;
+    }
+  }
+  if (!inlinedDocument) {
+    return null;
+  }
+  // cache template lookup
+  inlineHTMLDocumentMap.set(polymerElement, inlinedDocument.parsedDocument);
+  return inlinedDocument.parsedDocument;
+}
+
+function getInlinedStyles(polymerElement, analysis) {
+  const document = getInlinedTemplateDocument(polymerElement, analysis);
+  if (!document) {
+    return [];
+  }
+  const styles = getStyles(document.ast);
+  styles.forEach((s) => {
+    inlineHTMLDocumentMap.set(s, document);
+  });
+  return styles;
+}
+
+function markPolymerElement(polymerElement, useNativeShadow, analysis) {
+  const document = getInlinedTemplateDocument(polymerElement, analysis);
+  if (!document) {
+    return;
+  }
+  const template = document.ast;
+  // add a comment of the form `<!--css-build:shadow-->` to the template as the first child
+  const buildComment = dom5.constructors.comment(`css-build:${useNativeShadow ? 'shadow' : 'shady'}`);
+  prepend(template, buildComment);
+  if (!useNativeShadow) {
+    shadyScopeElementsInTemplate(template, polymerElement.tagName);
+  }
+  // make sure the inlined template is reprocessed in the containing JS document
+  updateInlineDocument(document);
 }
 
 async function polymerCssBuild(paths, options = {}) {
@@ -311,19 +424,29 @@ async function polymerCssBuild(paths, options = {}) {
   // run analyzer on all given files
   /** @type {Analysis} */
   const analysis = await analyzer.analyze(paths.map((p) => p.url));
-  // map dom modules to styles
+  // populate the dom module map
+  for (const domModule of analysis.getFeatures({kind: 'dom-module'})) {
+    const scope = domModule.id.toLowerCase();
+    const astNode = getAstNode(domModule);
+    domModuleMap[scope] = astNode;
+    setNodeFileLocation(astNode, domModule);
+  }
+  // map polymer elements to styles
   const moduleStyles = [];
-  for (const domModule of getOrderedDomModules(analysis)) {
-    const id = domModule.id;
-    const scope = id.toLowerCase();
-    const el = getAstNode(domModule);
-    domModuleCache[scope] = el;
-    setNodeFileLocation(el, domModule);
-    markElement(el, scope, nativeShadow);
-    const styles = getAndFixDomModuleStyles(el);
+  for (const polymerElement of getOrderedPolymerElements(analysis)) {
+    const scope = polymerElement.tagName;
+    let styles = [];
+    if (polymerElement.domModule) {
+      const domModule = polymerElement.domModule;
+      markDomModule(domModule, scope, nativeShadow);
+      styles = getAndFixDomModuleStyles(domModule);
+    } else {
+      markPolymerElement(polymerElement, nativeShadow, analysis);
+      styles = getInlinedStyles(polymerElement, analysis);
+    }
     styles.forEach((s) => {
       scopeMap.set(s, scope);
-      setNodeFileLocation(s, domModule);
+      setNodeFileLocation(s, polymerElement);
     });
     moduleStyles.push(styles);
   }
@@ -383,7 +506,7 @@ async function polymerCssBuild(paths, options = {}) {
         }
       });
       // mark the style as built
-      markElement(s, null, nativeShadow);
+      markElement(s, nativeShadow);
     }
     applyShim(ast);
     if (nativeShadow) {
@@ -396,6 +519,8 @@ async function polymerCssBuild(paths, options = {}) {
     }
     text = CssParse.stringify(ast, true);
     dom5.setTextContent(s, text);
+    // if the style is in an inlined HTML Document, update the outer JS Document
+    updateInlineDocument(inlineHTMLDocumentMap.get(s));
   });
   return paths.map((p) => {
     const doc = getDocument(analysis, p.url);
