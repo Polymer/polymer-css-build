@@ -59,4 +59,9 @@ const template = Polymer.html`
   </style>
 </custom-style>
 `
+
+Polymer({
+  is: 'modularized-element',
+  _template: Polymer.html`<span></span>`
+})
 document.head.appendChild(template.content.cloneNode(true));
