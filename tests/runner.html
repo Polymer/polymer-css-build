@@ -51,10 +51,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   function buildSuites(version) {
     const opts = options[version];
     return [
+      ...(combinations(['baseline/index.html'], opts.shadow.concat(opts.shady))),
       ...(combinations(['shadow/index.html'], opts.shadow)),
-      ...(combinations(['shadow-no-inline/index.html'], opts.shadoNoInline || opts.shadow)),
+      ...(combinations(['shadow-no-inline/index.html'], opts.shadowNoInline || opts.shadow)),
       ...(combinations(['shady/index.html'], opts.shady)),
-      ...(combinations(['baseline/index.html'], opts.shadow.concat(opts.shady)))
     ].map((s) => `generated/${version}/${s}`);
   }
 

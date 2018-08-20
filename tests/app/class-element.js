@@ -32,7 +32,7 @@ customElements.define(ClassElement.is, ClassElement);
 class OtherElement extends Polymer.Element {
   static get is() {return 'other-element'}
   static get template() {
-    return Polymer.html`<style>:host{@apply --module-mixin}</style>`;
+    return Polymer.html`<style>:host{@apply --module-mixin;}</style><div></div>`;
   }
 }
 
@@ -59,9 +59,9 @@ const template = Polymer.html`
   </style>
 </custom-style>
 `
+document.head.appendChild(template.content.cloneNode(true));
 
 Polymer({
   is: 'modularized-element',
-  _template: Polymer.html`<span></span>`
-})
-document.head.appendChild(template.content.cloneNode(true));
+  _template: Polymer.html`<style include="module-shared">:host{@apply --module-mixin;}</style><div></div>`
+});
