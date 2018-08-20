@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+* Add support for class based elements and inlined templates
+  * `class MyElement extends Polymer.Element {}` + `<dom-module id="my-element">`
+  * ```Polymer({is: 'legacy-inline-element', _template: Polymer.html``})```;
+  * ```class MyInlineElement extends Polymer.Element {static get template(){ return Polymer.html``}}```
+
 ## [0.3.0] - 2018-08-10
 * Upgrade to using @webcomponents/shadydom for Polymer v2 support
 * Use polymer-analyzer instead of hydrolysis
