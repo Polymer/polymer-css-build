@@ -16,11 +16,6 @@ const pathResolver = require('./lib/pathresolver.js');
 let ApplyShim, CssParse, StyleTransformer, StyleUtil;
 const loadShadyCSS = require('./lib/shadycss-entrypoint.js');
 
-const path = require('path');
-
-/** @type {number} */
-const AnalyzerVersion = require(path.resolve(require.resolve('polymer-analyzer'), '../../package.json')).version.match(/\d+/)[0];
-
 const {Analyzer, InMemoryOverlayUrlLoader} = require('polymer-analyzer');
 
 // Use `Analysis` from polymer-analyzer for typing
@@ -300,18 +295,15 @@ function getDocument(analysis, url) {
   if (res.error) {
     throw res.error;
   }
-  if (res.value) {
-    return res.value;
-  }
-  return res;
+  return res.value;
 }
 
 function getAstNode(feature) {
-  if (AnalyzerVersion === '2') {
-    return feature.astNode
-  } else {
-    return feature.astNode.node;
-  }
+  return feature.astNode.node;
+}
+
+function getContainingDocument(feature) {
+  return feature.astNode.containingDocument;
 }
 
 function getOrderedPolymerElements(analysis) {
@@ -397,7 +389,7 @@ function getInlinedTemplateDocument(polymerElement, analysis) {
   if (inlineHTMLDocumentMap.has(polymerElement)) {
     return inlineHTMLDocumentMap.get(polymerElement);
   }
-  const jsDocument = polymerElement.astNode.containingDocument;
+  const jsDocument = getContainingDocument(polymerElement);
   const url = jsDocument.url;
   const document = getDocument(analysis, url);
   const inlineHTMLDocumentSet = document.getFeatures({kind: 'html-document'});
@@ -440,7 +432,7 @@ function findDisconnectedDomModule(polymerElement, analysis) {
     // if the `<dom-module>` is inlined into another document, make sure to
     // associate the styles with that document so that modifications are
     // represented in the output
-    const domModuleContainingDoc = domModuleFeature.astNode && domModuleFeature.astNode.containingDocument
+    const domModuleContainingDoc = getContainingDocument(domModuleFeature);
     if (domModuleContainingDoc && domModuleContainingDoc.isInline) {
       const styles = getAndFixDomModuleStyles(domModuleNode);
       styles.forEach((s) => {
