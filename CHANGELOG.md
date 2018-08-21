@@ -1,10 +1,11 @@
 # Change Log
 
-## Unreleased
+## [0.4.0] - 2018-08-21
 * Add support for class based elements and inlined templates
   * `class MyElement extends Polymer.Element {}` + `<dom-module id="my-element">`
   * ```Polymer({is: 'legacy-inline-element', _template: Polymer.html``})```;
   * ```class MyInlineElement extends Polymer.Element {static get template(){ return Polymer.html``}}```
+  * ```template.innerHTML = html`<custom-style><style is="custom-style></style></custom-style>`; document.body.appendChild(template.content.cloneNode(true))```
 * Remove support for polymer-analyzer v2
   * Inlined templates require features found in polymer-analyzer v3
 
