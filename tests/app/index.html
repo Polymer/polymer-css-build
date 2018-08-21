@@ -49,7 +49,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <inline-element></inline-element>
 
 <script>
-  suite('polymer-css-build' + window.location.search, function() {
+  const hrefParts = window.location.href.split('/');
+  const polymerVersion = hrefParts.indexOf('polymer2') === -1 ? 'polymer1' : 'polymer2';
+  const buildType = hrefParts[hrefParts.indexOf(polymerVersion) + 1];
+
+  const suiteName = `polymer-css-build: ${polymerVersion} + ${buildType} ${window.location.search ? '+ ' + window.location.search : ''}`
+
+  console.log(suiteName);
+
+  suite(suiteName, function() {
     function assertComputed(node, expected, property = "border-top-width", pseudo) {
       assert.equal(getComputedStyle(node, pseudo).getPropertyValue(property).trim(), expected, `css property: ${property}`);
     }
@@ -106,7 +114,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
     test('css-build attribute', function() {
-      if (window.location.pathname.indexOf('baseline') >= 0) {
+      if (buildType === 'baseline') {
         // skip this test if we are testing the unbuilt case
         this.skip();
       }
@@ -115,5 +123,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const template = dm.querySelector('template');
       assert(template.hasAttribute('css-build'), 'dom-module template should have css-build attribute');
     });
+
+    if (polymerVersion === 'polymer2') {
+      suite('class elements', function() {
+        suiteSetup(function() {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'class-element.js';
+            script.onload = () => resolve();
+            script.onerror = (err) => reject(err);
+            document.head.appendChild(script);
+          });
+        });
+
+        test('class-element', function() {
+          const el = document.createElement('class-element');
+          document.body.appendChild(el);
+          assertComputed(el, 'rgb(0, 0, 128)', 'background-color');
+          const root = el.shadowRoot || el.shadyRoot;
+          const inner = Polymer.dom(root).querySelector('#inner');
+          assertComputed(inner, '20px');
+          assertComputed(inner, 'rgb(123, 123, 123)', 'color');
+        });
+
+        test('other-element', function() {
+          const el = document.createElement('other-element');
+          document.body.appendChild(el);
+          assertComputed(el, 'rgb(0, 0, 128)', 'background-color');
+          const root = el.shadowRoot || el.shadyRoot;
+          const inner = Polymer.dom(root).querySelector('div');
+          assertComputed(inner, '0px');
+        });
+
+        test('modularized-element', function() {
+          const el = document.createElement('modularized-element');
+          document.body.appendChild(el);
+          assertComputed(el, 'rgb(0, 0, 128)', 'background-color');
+          const root = el.shadowRoot || el.shadyRoot;
+          const inner = Polymer.dom(root).querySelector('div');
+          assertComputed(inner, '20px');
+        });
+      });
+    }
   });
 </script>
