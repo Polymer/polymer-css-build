@@ -61,7 +61,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   WCT.loadSuites([
     // work around polymer1 shadow-no-inline not supporting urls
     ...(buildSuites('polymer1').filter((s => s.indexOf('shadow-no-inline/') === -1))),
-    // work around polymer 2 shady build not working yet
     ...(buildSuites('polymer2'))
   ]);
 </script>
