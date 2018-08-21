@@ -54,12 +54,12 @@ const template = Polymer.html`
     html {
       --module-mixin: {
         background-color: rgb(0, 0, 128);
-      }
+      };
     }
   </style>
 </custom-style>
 `
-document.head.appendChild(template.content.cloneNode(true));
+document.body.appendChild(template.content.cloneNode(true));
 
 Polymer({
   is: 'modularized-element',

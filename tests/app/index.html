@@ -126,12 +126,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     if (polymerVersion === 'polymer2') {
       suite('class elements', function() {
-        suiteSetup(function(done) {
-          const script = document.createElement('script');
-          script.src = 'class-element.js';
-          script.onload = () => done();
-          script.onerror = (err) => done(err);
-          document.head.appendChild(script);
+        suiteSetup(function() {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'class-element.js';
+            script.onload = () => resolve();
+            script.onerror = (err) => reject(err);
+            document.head.appendChild(script);
+          });
         });
 
         test('class-element', function() {

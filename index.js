@@ -18,9 +18,10 @@ const loadShadyCSS = require('./lib/shadycss-entrypoint.js');
 
 const {Analyzer, InMemoryOverlayUrlLoader} = require('polymer-analyzer');
 
-// Use `Analysis` from polymer-analyzer for typing
+// Use types from polymer-analyzer
 /* eslint-disable no-unused-vars */
 const {Analysis} = require('polymer-analyzer/lib/model/model.js');
+const {ParsedHtmlDocument} = require('polymer-analyzer');
 /* eslint-enable */
 
 const {traverse} = require('polymer-analyzer/lib/javascript/estraverse-shim.js');
@@ -70,7 +71,7 @@ const scopeMap = new WeakMap();
 
 /**
  * Map of <style> ast node to inline HTML documents from analyzer
- * @type {!WeakMap<!Object, !Object>}
+ * @type {!WeakMap<!Object, !ParsedHtmlDocument>}
  */
 const inlineHTMLDocumentMap = new WeakMap();
 
@@ -278,7 +279,7 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
     matches.forEach((match) => {
       setNodeFileLocation(match, document);
       if (document.isInline) {
-        inlineHTMLDocumentMap.set(match, document);
+        inlineHTMLDocumentMap.set(match, document.parsedDocument);
       }
     });
     results.push(...matches);
