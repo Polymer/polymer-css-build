@@ -23,6 +23,8 @@ const {Analyzer, InMemoryOverlayUrlLoader} = require('polymer-analyzer');
 const {Analysis} = require('polymer-analyzer/lib/model/model.js');
 /* eslint-enable */
 
+const {traverse} = require('polymer-analyzer/lib/javascript/estraverse-shim.js');
+
 const {dirShadowTransform, slottedToContent} = require('./lib/polymer-1-transforms.js');
 
 const pred = dom5.predicates;
@@ -335,19 +337,15 @@ function updateInlineDocument(inlineDocument) {
   };
 }
 
-function searchAst(document, polymerElement, templateDocument) {
+function searchAst(polymerElement, templateDocument) {
   const polymerElementNode = getAstNode(polymerElement);
   const templateNode = getAstNode(templateDocument);
   let match = false;
   // Note: in visitor, return 'skip' to skip subtree, and 'break' to exit early
+  let visitor;
   if (polymerElement.isLegacyFactoryCall) {
     // this is a Polymer({}) call with `_template`
-    document.visit([{
-      enterCallExpression(current) {
-        if (current.callee.name !== 'Polymer') {
-          return 'skip';
-        }
-      },
+    visitor = {
       enterObjectProperty(current) {
         if (current.key.name === '_template') {
           match = current.value === templateNode;
@@ -356,18 +354,10 @@ function searchAst(document, polymerElement, templateDocument) {
           }
         }
       }
-    }]);
+    };
   } else {
     // this is a class element with `static get template() {}`
-    document.visit([{
-      enterClassDeclaration(current) {
-        if (current !== polymerElementNode) {
-          return 'skip';
-        }
-      },
-      enterClassExpresssion(current) {
-        this.enterClassDeclaration(current);
-      },
+    visitor = {
       enterClassMethod(current) {
         if (!current.static || current.kind !== 'get' || current.key.name !== 'template') {
           return 'skip';
@@ -379,8 +369,10 @@ function searchAst(document, polymerElement, templateDocument) {
           return 'break';
         }
       }
-    }]);
+    };
   }
+  // walk the AST from the `Polymer({})` or `class {}` definition
+  traverse(polymerElementNode, visitor);
   return match;
 }
 
@@ -389,16 +381,16 @@ function getInlinedTemplateDocument(polymerElement, analysis) {
   if (inlineHTMLDocumentMap.has(polymerElement)) {
     return inlineHTMLDocumentMap.get(polymerElement);
   }
+  // find InlinedHTMLDocuments inside of the "parsed" js document containing this PolymerElement
   const jsDocument = getContainingDocument(polymerElement);
-  const url = jsDocument.url;
-  const document = getDocument(analysis, url);
-  const inlineHTMLDocumentSet = document.getFeatures({kind: 'html-document'});
+  const parsedJsDocument = getDocument(analysis, jsDocument.url);
+  const inlineHTMLDocumentSet = parsedJsDocument.getFeatures({kind: 'html-document'});
   let inlinedDocument = null;
   // search all inlined html-documents in this js document for the one that is
   // inside the class definition for this polymer element scanning the AST
-  for (const document of inlineHTMLDocumentSet) {
-    if (searchAst(jsDocument, polymerElement, document)) {
-      inlinedDocument = document;
+  for (const htmlDocument of inlineHTMLDocumentSet) {
+    if (searchAst(polymerElement, htmlDocument)) {
+      inlinedDocument = htmlDocument;
       break;
     }
   }
