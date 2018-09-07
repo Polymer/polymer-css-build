@@ -30,6 +30,8 @@ const {dirShadowTransform, slottedToContent} = require('./lib/polymer-1-transfor
 
 const {createScannerMap, createParserMap} = require('./lib/slim-analyzer-options.js');
 
+const {IdentifierIsDocumentVariable} = require('./lib/closure-html-template-scanner.js');
+
 const pred = dom5.predicates;
 
 /**
@@ -288,11 +290,8 @@ function nodeWalkAllDocuments(analysis, query, queryOptions = undefined) {
     const matches = dom5.nodeWalkAll(document.parsedDocument.ast, query, undefined, queryOptions);
     matches.forEach((match) => {
       setNodeFileLocation(match, document);
-      if (document.isInline) {
-        inlineHTMLDocumentMap.set(match, document.parsedDocument);
-      }
+      results.push(match)
     });
-    results.push(...matches);
   }
   return results;
 }
@@ -357,7 +356,11 @@ function updateInlineDocument(inlineDocument) {
         raw: inlineDocument.stringify()
       };
       break;
+    case 'ArrayExpression':
+      // get to the node representing the closurified output of html``
+      node = node.elements[0];
     case 'StringLiteral':
+      // set the value of the array element to the stringified document
       node.value = inlineDocument.stringify();
       break;
   }
@@ -369,35 +372,47 @@ function searchAst(polymerElement, templateDocument, analysis) {
   const templateNode = getAstNode(templateDocument, analysis);
   let match = false;
   // Note: in visitor, return 'skip' to skip subtree, and 'break' to exit early
-  let visitor;
-  if (polymerElement.isLegacyFactoryCall) {
-    // this is a Polymer({}) call with `_template`
-    visitor = {
-      enterObjectProperty(current) {
-        if (current.key.name === '_template') {
-          match = current.value === templateNode;
-          if (match) {
-            return 'break';
-          }
-        }
+  const visitor = {
+    enterCallExpression(current) {
+      const args = current.arguments;
+      if (args.length !== 1) {
+        return 'skip';
       }
-    };
-  } else {
-    // this is a class element with `static get template() {}`
-    visitor = {
-      enterClassMethod(current) {
-        if (!current.static || current.kind !== 'get' || current.key.name !== 'template') {
-          return 'skip';
-        }
-      },
-      enterTaggedTemplateExpression(current) {
-        match = current === templateNode;
+      const [arg, ] = args;
+      if (arg.type !== 'Identifier') {
+        return 'skip';
+      }
+      if (IdentifierIsDocumentVariable(arg, templateNode)) {
+        match = templateNode;
+        return 'break';
+      }
+    },
+    enterObjectProperty(current, _parent, path) {
+      if (path.parentPath.parent !== polymerElementNode) {
+        return 'skip';
+      }
+      // this is a Polymer({}) call with `_template`
+      const keyName = current.key.name;
+      if (keyName === '_template' || keyName === 'template') {
+        match = current.value === templateNode;
         if (match) {
           return 'break';
         }
       }
-    };
-  }
+    },
+    enterClassMethod(current) {
+      // this is a class element with `static get template() {}`
+      if (!current.static || current.kind !== 'get' || current.key.name !== 'template') {
+        return 'skip';
+      }
+    },
+    enterTaggedTemplateExpression(current) {
+      match = current === templateNode;
+      if (match) {
+        return 'break';
+      }
+    }
+  };
   // walk the AST from the `Polymer({})` or `class {}` definition
   traverse(polymerElementNode, visitor);
   return match;
@@ -434,11 +449,7 @@ function getInlinedStyles(polymerElement, analysis) {
   if (!document) {
     return [];
   }
-  const styles = getStyles(document.ast);
-  styles.forEach((s) => {
-    inlineHTMLDocumentMap.set(s, document);
-  });
-  return styles;
+  return getStyles(document.ast);
 }
 
 function findDisconnectedDomModule(polymerElement, analysis) {
@@ -447,18 +458,6 @@ function findDisconnectedDomModule(polymerElement, analysis) {
   if (domModuleFeature) {
     // polymerElement.domModule is assumed to the the HTML node
     const domModuleNode = getAstNode(domModuleFeature);
-    // if the `<dom-module>` is inlined into another document, make sure to
-    // associate the styles with that document so that modifications are
-    // represented in the output
-    const domModuleContainingDoc = getContainingDocument(domModuleFeature, analysis);
-    if (domModuleContainingDoc && domModuleContainingDoc.isInline) {
-      const styles = getAndFixDomModuleStyles(domModuleNode);
-      styles.forEach((s) => {
-        inlineHTMLDocumentMap.set(s, domModuleContainingDoc);
-      });
-      // update the document with any changes `getAndFixDomModuleStyles` may have caused
-      updateInlineDocument(domModuleContainingDoc);
-    }
     polymerElement.domModule = domModuleNode;
   }
 }
@@ -475,8 +474,18 @@ function markPolymerElement(polymerElement, useNativeShadow, analysis) {
   if (!useNativeShadow) {
     shadyScopeElementsInTemplate(template, polymerElement.tagName);
   }
-  // make sure the inlined template is reprocessed in the containing JS document
-  updateInlineDocument(document);
+}
+
+function buildInlineDocumentSet(analysis) {
+  const inlineHTMLDocumentSet = new Set();
+
+  for (const doc of analysis.getFeatures({kind: 'html-document', externalPackages: true})) {
+    if (doc.isInline) {
+      inlineHTMLDocumentSet.add(doc);
+    }
+  }
+
+  return inlineHTMLDocumentSet;
 }
 
 async function polymerCssBuild(paths, options = {}) {
@@ -499,12 +508,15 @@ async function polymerCssBuild(paths, options = {}) {
   /** @type {Analysis} */
   const analysis = await analyzer.analyze(paths.map((p) => p.url));
   // populate the dom module map
-  for (const domModule of analysis.getFeatures({kind: 'dom-module'})) {
+  const domModuleSet = analysis.getFeatures({kind: 'dom-module'})
+  for (const domModule of domModuleSet) {
     const scope = domModule.id.toLowerCase();
     const astNode = getAstNode(domModule);
     domModuleMap[scope] = astNode;
     setNodeFileLocation(astNode, domModule);
   }
+  // grap a set of all inline html documents to update at the end
+  const inlineHTMLDocumentSet = buildInlineDocumentSet(analysis);
   // map polymer elements to styles
   const moduleStyles = [];
   for (const polymerElement of getOrderedPolymerElements(analysis)) {
@@ -529,6 +541,19 @@ async function polymerCssBuild(paths, options = {}) {
       setNodeFileLocation(s, polymerElement);
     });
     moduleStyles.push(styles);
+  }
+  // also process dom modules used only for style sharing
+  for (const domModule of domModuleSet) {
+    const {id} = domModule;
+    const domModuleIsElementTemplate = analysis.getFeatures({kind: 'polymer-element', id}).size > 0;
+    if (!domModuleIsElementTemplate) {
+      const styles = getAndFixDomModuleStyles(domModuleMap[id]);
+      styles.forEach((s) => {
+        scopeMap.set(s, id);
+        setNodeFileLocation(s, domModule);
+      });
+      moduleStyles.push(styles);
+    }
   }
   // inline and flatten styles into a single list
   const flatStyles = [];
@@ -599,9 +624,11 @@ async function polymerCssBuild(paths, options = {}) {
     }
     text = CssParse.stringify(ast, true);
     dom5.setTextContent(s, text);
-    // if the style is in an inlined HTML Document, update the outer JS Document
-    updateInlineDocument(inlineHTMLDocumentMap.get(s));
   });
+  // update inline HTML documents
+  for (const inlineDocument of inlineHTMLDocumentSet) {
+    updateInlineDocument(inlineDocument);
+  }
   return paths.map((p) => {
     const doc = getDocument(analysis, p.url);
     return {
