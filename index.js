@@ -312,7 +312,7 @@ function getDocument(analysis, url) {
 
 function getAstNode(feature) {
   let astNode = feature.astNode;
-  if (astNode.node && astNode.containingDocument) {
+  if (astNode.node) {
     return astNode.node;
   } else {
     return astNode;
