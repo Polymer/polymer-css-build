@@ -1,5 +1,10 @@
 # Change Log
 
+## Unreleased
+* Add support for inline HTML documents set with `.innerHTML=` syntax
+* Add support for parsing `Polymer({})` elements from Closure Compiler output
+* Add support for `--build-for-shady` and Polymer v1 `::content` selectors
+
 ## [0.4.0] - 2018-08-21
 * Add support for class based elements and inlined templates
   * `class MyElement extends Polymer.Element {}` + `<dom-module id="my-element">`
