@@ -26,7 +26,7 @@ const {ParsedHtmlDocument} = require('polymer-analyzer');
 
 const {traverse} = require('polymer-analyzer/lib/javascript/estraverse-shim.js');
 
-const {dirShadowTransform, slottedToContent} = require('./lib/polymer-1-transforms.js');
+const {dirShadowTransform, slottedToContent, shadyReplaceContent} = require('./lib/polymer-1-transforms.js');
 
 const {createScannerMap, createParserMap} = require('./lib/slim-analyzer-options.js');
 
@@ -221,25 +221,19 @@ function markElement(element, useNativeShadow) {
   dom5.setAttribute(element, 'css-build', useNativeShadow ? 'shadow' : 'shady');
 }
 
-function markDomModule(domModule, scope, useNativeShadow, analysis) {
+function markDomModule(domModule, scope, useNativeShadow, markTemplate = true) {
   // apply scoping to dom-module
   markElement(domModule, useNativeShadow);
   // apply scoping to template
   const template = dom5.query(domModule, pred.hasTagName('template'));
   if (template) {
-    markElement(template, useNativeShadow);
+    if (markTemplate) {
+      markElement(template, useNativeShadow);
+    }
     // mark elements' subtree under shady build
     if (!useNativeShadow && scope) {
       shadyScopeElementsInTemplate(template, scope);
     }
-  }
-  const [domModuleFeature, ] = analysis.getFeatures({kind: 'dom-module', id: scope});
-  // if the `<dom-module>` is inlined into another document, make sure to
-  // associate the styles with that document so that modifications are
-  // represented in the output
-  const domModuleContainingDoc = getContainingDocument(domModuleFeature, analysis);
-  if (domModuleContainingDoc && domModuleContainingDoc.isInline) {
-    updateInlineDocument(domModuleContainingDoc);
   }
 }
 
@@ -259,6 +253,12 @@ function slottedTransform(ast) {
 function dirTransform(ast) {
   StyleUtil.forEachRule(ast, (rule) => {
     rule.selector = dirShadowTransform(rule.selector);
+  });
+}
+
+function contentTransform(ast, scope) {
+  StyleUtil.forEachRule(ast, (rule) => {
+    rule.selector = shadyReplaceContent(rule.selector, scope);
   });
 }
 
@@ -530,7 +530,7 @@ async function polymerCssBuild(paths, options = {}) {
     }
     if (polymerElement.domModule) {
       const domModule = polymerElement.domModule;
-      markDomModule(domModule, scope, nativeShadow, analysis);
+      markDomModule(domModule, scope, nativeShadow, analysis, polymerVersion > 1);
       styles = getAndFixDomModuleStyles(domModule);
     } else {
       markPolymerElement(polymerElement, nativeShadow, analysis);
@@ -621,6 +621,9 @@ async function polymerCssBuild(paths, options = {}) {
       }
     } else {
       shadyShim(ast, s, analysis);
+      if (polymerVersion === 1) {
+        contentTransform(ast, scopeMap.get(s));
+      }
     }
     text = CssParse.stringify(ast, true);
     dom5.setTextContent(s, text);
