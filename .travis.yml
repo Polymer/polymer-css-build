@@ -7,4 +7,5 @@ sudo: false
 addons:
   firefox: latest
   chrome: stable
+before_script: npm run bundle
 script: xvfb-run npm test
