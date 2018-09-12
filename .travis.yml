@@ -7,6 +7,7 @@ addons:
   firefox: latest
   chrome: stable
 script:
+- npm run bundle
 - echo "polymer-analyzer 2.7"
 - npm install --no-save polymer-analyzer@2.7
 - xvfb-run npm test -- -l chrome
