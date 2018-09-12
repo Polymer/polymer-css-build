@@ -7,7 +7,7 @@
     "polymer-css-build": "bin/polymer-css-build"
   },
   "scripts": {
-    "lint": "eslintG **/*.js",
+    "lint": "eslint **/*.js",
     "prepare-tests": "./tests/prepare-tests.sh",
     "test": "npm run lint && npm run prepare-tests && wct",
     "bundle": "rollup -c rollup.config.js"
