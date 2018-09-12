@@ -13,7 +13,7 @@ const dom5 = require('dom5');
 
 const pathResolver = require('./lib/pathresolver.js');
 
-let ApplyShim, CssParse, StyleTransformer, StyleUtil;
+let ApplyShim, CssParse, StyleTransformer, StyleUtil, ShadyUnscopedAttribute;
 const loadShadyCSS = require('./lib/shadycss-entrypoint.js');
 
 const {Analyzer, InMemoryOverlayUrlLoader} = require('polymer-analyzer');
@@ -135,7 +135,11 @@ function getAttributeArray(node, attribute) {
   return array;
 }
 
-function inlineStyleIncludes(style) {
+function isUnscopedStyle(style) {
+  return dom5.hasAttribute(style, ShadyUnscopedAttribute);
+}
+
+function inlineStyleIncludes(style, useNativeShadow) {
   if (!styleIncludeMatch(style)) {
     return;
   }
@@ -153,6 +157,10 @@ function inlineStyleIncludes(style) {
     const includedStyles = getAndFixDomModuleStyles(domModule);
     // gather included styles
     includedStyles.forEach((ism) => {
+      // do not inline styles that need to be unscoped in ShadyDOM
+      if (!useNativeShadow && isUnscopedStyle(ism)) {
+        return;
+      }
       // this style may also have includes
       inlineStyleIncludes(ism);
       const inlineDocument = domModule.__ownerDocument;
@@ -267,7 +275,8 @@ function setUpLibraries(useNativeShadow) {
     ApplyShim,
     CssParse,
     StyleTransformer,
-    StyleUtil
+    StyleUtil,
+    ShadyUnscopedAttribute
   } = loadShadyCSS(useNativeShadow));
 }
 
@@ -563,7 +572,7 @@ async function polymerCssBuild(paths, options = {}) {
     }
     // do style includes
     if (options ? !options['no-inline-includes'] : true) {
-      styles.forEach((s) => inlineStyleIncludes(s));
+      styles.forEach((s) => inlineStyleIncludes(s, nativeShadow));
     }
     // reduce styles to one
     const finalStyle = styles[styles.length - 1];
@@ -586,7 +595,7 @@ async function polymerCssBuild(paths, options = {}) {
   const customStyles = nodeWalkAllDocuments(analysis, customStyleMatch);
   // inline custom styles with includes
   if (options ? !options['no-inline-includes'] : true) {
-    customStyles.forEach((s) => inlineStyleIncludes(s));
+    customStyles.forEach((s) => inlineStyleIncludes(s, nativeShadow));
   }
   // add custom styles to the front
   // custom styles may define mixins for the whole tree
