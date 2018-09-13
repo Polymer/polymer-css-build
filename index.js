@@ -539,7 +539,7 @@ async function polymerCssBuild(paths, options = {}) {
     }
     if (polymerElement.domModule) {
       const domModule = polymerElement.domModule;
-      markDomModule(domModule, scope, nativeShadow, analysis, polymerVersion > 1);
+      markDomModule(domModule, scope, nativeShadow, polymerVersion > 1);
       styles = getAndFixDomModuleStyles(domModule);
     } else {
       markPolymerElement(polymerElement, nativeShadow, analysis);

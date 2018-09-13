@@ -121,7 +121,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const dm = Polymer.DomModule.import('x-app');
       assert(dm.hasAttribute('css-build'), 'dom-module should have css-build attribute');
       const template = dm.querySelector('template');
-      assert(template.hasAttribute('css-build'), 'dom-module template should have css-build attribute');
+      const shouldHaveMarkedTemplate = polymerVersion !== 'polymer1';
+      assert(!(template.hasAttribute('css-build') ^ shouldHaveMarkedTemplate), `dom-module template should ${shouldHaveMarkedTemplate ? 'not ' : ''}have css-build attribute`);
     });
 
     if (polymerVersion === 'polymer2') {
