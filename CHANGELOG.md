@@ -4,6 +4,17 @@
 * Add support for inline HTML documents set with `.innerHTML=` syntax
 * Add support for parsing `Polymer({})` elements from Closure Compiler output
 * Add support for `--build-for-shady` and Polymer v1 `::content` selectors
+* Drop `esm` module for manual `rollup` build of `@webcomponents/shadycss`
+  * Too many weird loader issues for various customers
+* Do not mark polymer v1 templates with `css-build` attribute.
+
+## [0.3.2] - 2018-09-12
+* Fix typo in package.json
+* Do not mark polymer v1 templates with `css-build` attribute.
+## [0.3.1] - 2018-09-12
+* Add support for `--build-for-shady` and Polymer v1 `::content` selectors
+* Drop `esm` module for manual `rollup` build of `@webcomponents/shadycss`
+  * Too many weird loader issues for various customers
 
 ## [0.4.0] - 2018-08-21
 * Add support for class based elements and inlined templates
