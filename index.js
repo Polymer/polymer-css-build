@@ -197,14 +197,16 @@ function addClass(node, className) {
   dom5.setAttribute(node, 'class', classList.join(' '));
 }
 
-function markElement(domModule, scope, useNativeShadow) {
+function markElement(domModule, scope, useNativeShadow, markTemplate = true) {
   const buildType = useNativeShadow ? 'shadow' : 'shady';
   // apply scoping to dom-module
   dom5.setAttribute(domModule, 'css-build', buildType);
   // apply scoping to template
   const template = dom5.query(domModule, pred.hasTagName('template'));
   if (template) {
-    dom5.setAttribute(template, 'css-build', buildType);
+    if (markTemplate) {
+      dom5.setAttribute(template, 'css-build', buildType);
+    }
     // mark elements' subtree under shady build
     if (buildType === 'shady' && scope) {
       const elements = dom5.queryAll(template, notStyleMatch, undefined, dom5.childNodesIncludeTemplate);
@@ -319,7 +321,7 @@ async function polymerCssBuild(paths, options = {}) {
     const el = getAstNode(domModule);
     domModuleCache[scope] = el;
     setNodeFileLocation(el, domModule);
-    markElement(el, scope, nativeShadow);
+    markElement(el, scope, nativeShadow, polymerVersion > 1);
     const styles = getAndFixDomModuleStyles(el);
     styles.forEach((s) => {
       scopeMap.set(s, scope);
