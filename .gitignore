@@ -1,8 +1,4 @@
-bower_components
-node_modules
-test/shadow
-test/shady
-test/webcomponentsjs
 .vscode
-example
+node_modules
 tests/generated
+lib/bundled-shadycss.js
