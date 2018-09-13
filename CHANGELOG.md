@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [0.5.0] - 2018-09-13
 * Add support for inline HTML documents set with `.innerHTML=` syntax
 * Add support for parsing `Polymer({})` elements from Closure Compiler output
 * Add support for `--build-for-shady` and Polymer v1 `::content` selectors
