@@ -1,5 +1,8 @@
 # Change Log
 
+## Unreleased
+* Add support for Polymer v1 `var(--foo, --bar)` => `var(--foo,var(--bar))` transform
+
 ## [0.5.0] - 2018-09-13
 * Add support for inline HTML documents set with `.innerHTML=` syntax
 * Add support for parsing `Polymer({})` elements from Closure Compiler output

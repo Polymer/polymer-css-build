@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="x-component.html">
 <link rel="import" href="x-app.html">
 <link rel="import" href="cr-bug.html">
+<link rel="import" href="polymer-1-vars.html">
 
 <custom-style>
   <style is="custom-style" include="shared-style">
@@ -69,8 +70,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const el = Polymer.dom(document).querySelector('x-component');
       assertComputed(el, '0px');
       assertComputed(el, 'rgba(0, 0, 0, 0)', 'background-color');
-      const url = `${location.protocol}//${location.host}${location.pathname.replace('/index.html', '')}/shared/hands.png`;
-      assertComputed(el.$.icon, `url("${url}")`, 'background-image');
+      const expectedUrl = `${location.protocol}//${location.host}${location.pathname.replace('/index.html', '')}/shared/hands.png`;
+      const computedUrl = getComputedStyle(el.$.icon).getPropertyValue('background-image').trim();
+      const actualUrl = /url\("?([^")]*)"?\)/.exec(computedUrl)[1];
+      assert.equal(expectedUrl, actualUrl, 'url should be the same');
       const root = el.shadyRoot || el.shadowRoot;
       const nested = Polymer.dom(root).querySelector('x-nested-apply');
       assertComputed(nested, '20px');
@@ -163,6 +166,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           const root = el.shadowRoot || el.shadyRoot;
           const inner = Polymer.dom(root).querySelector('div');
           assertComputed(inner, '20px');
+        });
+      });
+    } else {
+      suite('polymer 1 transforms', function() {
+        test('polymer 1 var syntax fixup', function() {
+          if (window.Polymer.Settings.useNativeCSSProperties) {
+            // the bad `var(--a, --b)` syntax won't work in native
+            this.skip();
+          }
+          const el = document.createElement('polymer-1-vars');
+          document.body.appendChild(el);
+          window.Polymer.dom.flush();
+          assertComputed(el, 'rgb(123, 123, 123)', 'background-color');
         });
       });
     }

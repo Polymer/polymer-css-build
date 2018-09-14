@@ -26,7 +26,7 @@ const {ParsedHtmlDocument} = require('polymer-analyzer');
 
 const {traverse} = require('polymer-analyzer/lib/javascript/estraverse-shim.js');
 
-const {dirShadowTransform, slottedToContent, shadyReplaceContent} = require('./lib/polymer-1-transforms.js');
+const {dirShadowTransform, slottedToContent, shadyReplaceContent, fixBadVars} = require('./lib/polymer-1-transforms.js');
 
 const {createScannerMap, createParserMap} = require('./lib/slim-analyzer-options.js');
 
@@ -600,6 +600,17 @@ async function polymerCssBuild(paths, options = {}) {
   // add custom styles to the front
   // custom styles may define mixins for the whole tree
   flatStyles.unshift(...customStyles);
+  // fix old `var(--a, --b)` syntax in polymer v1 builds
+  if (polymerVersion === 1) {
+    flatStyles.forEach((s) => {
+      const text = dom5.getTextContent(s);
+      const ast = CssParse.parse(text);
+      StyleUtil.forEachRule(ast, (rule) => {
+        fixBadVars(rule);
+      });
+      dom5.setTextContent(s, CssParse.stringify(ast, true));
+    });
+  }
   // populate mixin map
   flatStyles.forEach((s) => {
     const text = dom5.getTextContent(s);
