@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="x-component.html">
 <link rel="import" href="x-app.html">
 <link rel="import" href="cr-bug.html">
+<link rel="import" href="polymer-1-vars.html">
 
 <custom-style>
   <style is="custom-style" include="shared-style">
@@ -163,6 +164,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           const root = el.shadowRoot || el.shadyRoot;
           const inner = Polymer.dom(root).querySelector('div');
           assertComputed(inner, '20px');
+        });
+      });
+    } else {
+      suite('polymer 1 transforms', function() {
+        test('polymer 1 var syntax fixup', function() {
+          const el = document.createElement('polymer-1-vars');
+          document.body.appendChild(el);
+          assertComputed(el, 'rgb(123, 123, 123)', 'background-color');
         });
       });
     }
