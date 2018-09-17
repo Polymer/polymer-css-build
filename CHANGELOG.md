@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [0.6.0] - 2018-09-17
 * Add support for Polymer v1 `var(--foo, --bar)` => `var(--foo,var(--bar))` transform
 
 ## [0.5.0] - 2018-09-13
