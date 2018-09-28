@@ -10,7 +10,8 @@
     "lint": "eslint **/*.js",
     "prepare-tests": "./tests/prepare-tests.sh",
     "test": "npm run lint && npm run prepare-tests && wct",
-    "bundle": "rollup -c rollup.config.js"
+    "bundle": "rollup -c rollup.config.js",
+    "prepare": "npm run bundle"
   },
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
