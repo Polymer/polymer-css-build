@@ -159,6 +159,7 @@ function inlineStyleIncludes(style, useNativeShadow) {
     includedStyles.forEach((ism) => {
       // do not inline styles that need to be unscoped in ShadyDOM
       if (!useNativeShadow && isUnscopedStyle(ism)) {
+        leftover.push(id);
         return;
       }
       // this style may also have includes
@@ -584,7 +585,7 @@ async function polymerCssBuild(paths, options = {}) {
       consumed.forEach((c) => dom5.remove(c));
       dom5.setTextContent(finalStyle, text.join(''));
       const oldInclude = getAttributeArray(finalStyle, 'include');
-      const newInclude = oldInclude.concat(includes).join(' ');
+      const newInclude = Array.from(new Set(oldInclude.concat(includes))).join(' ');
       if (newInclude) {
         dom5.setAttribute(finalStyle, 'include', newInclude);
       }

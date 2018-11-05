@@ -1,5 +1,8 @@
 # Change Log
 
+## Unreleased
+- Fix `shady-unscoped` style imports and add tests
+
 ## [0.6.0] - 2018-09-17
 * Add support for Polymer v1 `var(--foo, --bar)` => `var(--foo,var(--bar))` transform
 
