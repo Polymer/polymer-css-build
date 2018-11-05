@@ -137,7 +137,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const div = Polymer.dom(root).querySelector('div');
       assertComputed(div, '10px');
       assertComputed(div, 'rgb(255, 0, 255)', 'background-color');
-      if ((Polymer.Settings && !Polymer.Settings.useShadow) || (window.ShadyCSS && !window.ShadyCSS.nativeShadow)) {
+      if (buildType === 'shady') {
         const testEl = document.createElement('div');
         testEl.setAttribute('unscoped', '');
         testEl.classList.add('included');
