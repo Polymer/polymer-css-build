@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="cr-bug.html">
 <link rel="import" href="polymer-1-vars.html">
 <link rel="import" href="shady-unscoped.html">
+<link rel="import" href="dir-element.html">
 
 <custom-style>
   <style is="custom-style" include="shared-style">
@@ -31,6 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <x-app></x-app>
 <x-component></x-component>
 <cr-bug-owner></cr-bug-owner>
+<dir-element></dir-element>
 
 <dom-module id="inline-element">
   <template>
@@ -128,6 +130,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const template = dm.querySelector('template');
       const shouldHaveMarkedTemplate = polymerVersion !== 'polymer1';
       assert(!(template.hasAttribute('css-build') ^ shouldHaveMarkedTemplate), `dom-module template should ${shouldHaveMarkedTemplate ? 'not ' : ''}have css-build attribute`);
+    });
+
+    suite('dir', function() {
+      setup(function() {
+        document.documentElement.setAttribute('dir', 'ltr');
+      });
+      teardown(function() {
+        document.documentElement.removeAttribute('dir');
+      });
+      test('dir transform', async function() {
+        const el = Polymer.dom(document).querySelector('dir-element');
+        const root = el.shadyRoot || el.shadowRoot;
+        const div = Polymer.dom(root).querySelector('div');
+        assertComputed(el, 'rgb(255, 0, 0)', 'color');
+        assertComputed(div, 'rgb(0, 0, 255)', 'background-color');
+        document.documentElement.setAttribute('dir', 'rtl');
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        assertComputed(el, 'rgb(0, 0, 123)', 'color');
+        assertComputed(div, 'rgb(123, 0, 0)', 'background-color');
+      });
     });
 
     test('shady-unscoped', function() {
