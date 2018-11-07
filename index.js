@@ -28,6 +28,8 @@ const {traverse} = require('polymer-analyzer/lib/javascript/estraverse-shim.js')
 
 const {dirShadowTransform, slottedToContent, shadyReplaceContent, fixBadVars} = require('./lib/polymer-1-transforms.js');
 
+const {polymer2DirShadowTransform} = require('./lib/polymer-2-dir-transform.js');
+
 const {createScannerMap, createParserMap} = require('./lib/slim-analyzer-options.js');
 
 const {IdentifierIsDocumentVariable} = require('./lib/closure-html-template-scanner.js');
@@ -259,9 +261,13 @@ function slottedTransform(ast) {
   });
 }
 
-function dirTransform(ast) {
+function dirTransform(ast, polymerVersion) {
   StyleUtil.forEachRule(ast, (rule) => {
-    rule.selector = dirShadowTransform(rule.selector);
+    if (polymerVersion === 1) {
+      rule.selector = dirShadowTransform(rule.selector);
+    } else {
+      rule.selector = polymer2DirShadowTransform(rule.selector);
+    }
   });
 }
 
@@ -636,9 +642,9 @@ async function polymerCssBuild(paths, options = {}) {
     }
     applyShim(ast);
     if (nativeShadow) {
+      dirTransform(ast, polymerVersion);
       if (polymerVersion === 1) {
         slottedTransform(ast);
-        dirTransform(ast);
       }
     } else {
       shadyShim(ast, s, analysis);

@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Fix `shady-unscoped` style imports and add tests
+- Add build support for `:dir()` for Polymer 2 Shadow DOM
 
 ## [0.6.0] - 2018-09-17
 * Add support for Polymer v1 `var(--foo, --bar)` => `var(--foo,var(--bar))` transform
