@@ -59,9 +59,9 @@ const options = [
     description: 'Which version of Polymer to build for. Determines if URLs are transformed in templates, and whether to transform <slot> to <content>. Supported versions are `1` and `2`. Version 2 is default'
   },
   {
-    name: 'extract-styles',
-    type: String,
-    description: 'Extract all element and custom styles into a single css file. This will only work with the "--build-for-shady" flag, and only if browser supports native CSS Custom Properties. Provide an output file name. URLs will be relative to the first file given.'
+    name: 'single-style',
+    type: Boolean,
+    description: 'Merge all element and custom styles into a single style. This will only work with the "--build-for-shady" flag, and only if browser supports native CSS Custom Properties.'
   }
 ];
 
@@ -97,8 +97,8 @@ if (args.output.length > 0 && args.output.length !== args.file.length) {
   process.exit(1);
 }
 
-if (args['extract-styles'] && !args['build-for-shady']) {
-  console.error('--extract-style requires --build-for-shady');
+if (args['single-style'] && !args['build-for-shady']) {
+  console.error('--single-style requires --build-for-shady');
   printHelp();
   process.exit(1);
 }
@@ -109,9 +109,6 @@ const docs = args.file.map(f => ({
   content: fs.readFileSync(f, 'utf8')
 }));
 const outputFiles = args.output.length ? args.output : args.file;
-if (args['extract-styles']) {
-  outputFiles.push(args['extract-styles']);
-}
 polycss(docs, args).then((docs) => {
   docs.forEach((d, idx) => {
     fs.writeFileSync(outputFiles[idx], d.content, 'utf8');
