@@ -12,4 +12,4 @@ addons:
     packages:
       - google-chrome-stable
 before_script: npm run bundle
-script: xvfb-run npm test
+script: npm test
