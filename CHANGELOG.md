@@ -1,4 +1,12 @@
 # Change Log
+## [0.3.3] - 2018-09-28
+* Rebuild shadycss bundle with changes from https://github.com/webcomponents/shadycss/pull/215
+
+## [0.3.2] - 2018-09-12
+* Don't mark templates in polymer v1 builds
+
+## [0.3.1] - 2018-09-12
+* Drop `esm` module for bundling with `rollup`
 
 ## Unreleased
 - Fix `shady-unscoped` style imports and add tests
