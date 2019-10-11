@@ -1,16 +1,10 @@
 # Change Log
-## [0.3.3] - 2018-09-28
-* Rebuild shadycss bundle with changes from https://github.com/webcomponents/shadycss/pull/215
-
-## [0.3.2] - 2018-09-12
-* Don't mark templates in polymer v1 builds
-
-## [0.3.1] - 2018-09-12
-* Drop `esm` module for bundling with `rollup`
 
 ## Unreleased
 - Fix `shady-unscoped` style imports and add tests
 - Add build support for `:dir()` for Polymer 2 Shadow DOM
+- Drop nodejs 8 support
+- Fix testing on travis by moving to `xenial`
 
 ## [0.6.0] - 2018-09-17
 * Add support for Polymer v1 `var(--foo, --bar)` => `var(--foo,var(--bar))` transform
@@ -23,14 +17,6 @@
   * Too many weird loader issues for various customers
 * Do not mark polymer v1 templates with `css-build` attribute.
 
-## [0.3.2] - 2018-09-12
-* Fix typo in package.json
-* Do not mark polymer v1 templates with `css-build` attribute.
-## [0.3.1] - 2018-09-12
-* Add support for `--build-for-shady` and Polymer v1 `::content` selectors
-* Drop `esm` module for manual `rollup` build of `@webcomponents/shadycss`
-  * Too many weird loader issues for various customers
-
 ## [0.4.0] - 2018-08-21
 * Add support for class based elements and inlined templates
   * `class MyElement extends Polymer.Element {}` + `<dom-module id="my-element">`
@@ -39,6 +25,18 @@
   * ```template.innerHTML = html`<custom-style><style is="custom-style></style></custom-style>`; document.body.appendChild(template.content.cloneNode(true))```
 * Remove support for polymer-analyzer v2
   * Inlined templates require features found in polymer-analyzer v3
+
+## [0.3.3] - 2018-09-28
+* Rebuild shadycss bundle with changes from https://github.com/webcomponents/shadycss/pull/215
+
+## [0.3.2] - 2018-09-12
+* Fix typo in package.json
+* Do not mark polymer v1 templates with `css-build` attribute.
+
+## [0.3.1] - 2018-09-12
+* Add support for `--build-for-shady` and Polymer v1 `::content` selectors
+* Drop `esm` module for manual `rollup` build of `@webcomponents/shadycss`
+  * Too many weird loader issues for various customers
 
 ## [0.3.0] - 2018-08-10
 * Upgrade to using @webcomponents/shadydom for Polymer v2 support
@@ -92,4 +90,3 @@
 * Fix support for node v4. (Don't use Array.includes)
 * Improve shimming of incorrect `var()` calls, where the fallback value is a custom property that doesn't itself use `var()`
 * Improve support for node v6 by updating to the `command-line-args` v3 branch.
-

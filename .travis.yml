@@ -1,11 +1,15 @@
 language: node_js
-node_js:
-  - "8"
-  - "10"
-dist: trusty
+node_js: "10"
+dist: xenial
 sudo: false
+services:
+  - xvfb
 addons:
   firefox: latest
-  chrome: stable
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
 before_script: npm run bundle
 script: xvfb-run npm test
