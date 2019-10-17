@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [0.7.0] - 2019-10-16
 - Fix `shady-unscoped` style imports and add tests
 - Add build support for `:dir()` for Polymer 2 Shadow DOM
 - Drop nodejs 8 support
